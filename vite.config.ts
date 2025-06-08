@@ -1,7 +1,12 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  server: {
+    proxy: {
+      // Прокси для всех запросов на /api → твой Spring Boot
+      '/api': 'http://localhost:8080', // или порт, где у тебя бекенд
+    },
+  },
 })

@@ -35,7 +35,42 @@
 
 .card {
   padding: 2em;
+  max-width: 900px;
+  margin: 40px auto;
+  background: #1B1033;
+  border-radius: 24px;
+  box-shadow: 0 2px 12px 0 #0C081522;
+  color: #fff;
+  text-align: left;              /* Таблицы и формы выровнены по левому краю */
 }
+
+.card--narrow {
+  max-width: 500px;
+}
+
+.card th, .card td {
+  border: 1px solid #28D8C4;         /* Accent Turquoise */
+}
+
+.card tr:hover {
+  background: rgba(40, 216, 196, 0.07); /* Бирюзовый хайлайт */
+}
+
+
+button {
+  background: linear-gradient(135deg, #28D8C4 0%, #B79FFF 100%);
+  color: #1B1033;
+  font-weight: 600;
+  border-radius: 12px;
+  border: none;
+  box-shadow: 0 2px 6px 0 #0C081522;
+  transition: filter 0.2s, box-shadow 0.2s;
+}
+button:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 6px 18px 0 #0C081522;
+}
+
 
 .read-the-docs {
   color: #888;
