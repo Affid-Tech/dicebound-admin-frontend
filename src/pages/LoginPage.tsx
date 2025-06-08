@@ -23,8 +23,12 @@ export default function LoginPage() {
             });
             if (!res.ok) throw new Error("Неверный логин или пароль");
             navigate("/users");
-        } catch (err: any) {
-            setError("Ошибка авторизации: " + (err.message ?? ""));
+        } catch (e: unknown) {
+            if (e instanceof Error) {
+                setError("Ошибка авторизации: " + e.message);
+            } else {
+                setError("Ошибка авторизации");
+            }
         }
     };
 
