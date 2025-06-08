@@ -5,14 +5,24 @@ import AuthGuard from "./components/AuthGuard";
 import LogoutButton from "./components/LogoutButton";
 import UserForm from "./pages/UserForm.tsx";
 import "./App.css";
+import {useState} from "react";
 
 export default function App() {
+
+    const [auth, setAuth] = useState(!!localStorage.getItem("basicAuth"));
+
+    // Используй setAuth после login/logout:
+    const handleLogin = () => setAuth(true);
+    const handleLogout = () => setAuth(false);
+
     return (
         <BrowserRouter>
             <div>
-                {localStorage.getItem("basicAuth") && <LogoutButton />}
+                {auth && (
+                    <LogoutButton onLogout={handleLogout} />
+                )}
                 <Routes>
-                    <Route path="/login" element={<LoginPage />} />
+                    <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                     <Route
                         path="/users"
                         element={
