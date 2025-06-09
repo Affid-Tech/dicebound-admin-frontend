@@ -8,6 +8,9 @@ import "./App.css";
 import CurrencyRateList from "./pages/CurrencyRateList";
 import CurrencyRateForm from "./pages/CurrencyRateForm";
 import {useState} from "react";
+import AdventureList from "./pages/AdventureList.tsx";
+import AdventureDetails from "./pages/AdventureDetails.tsx";
+import AdventureForm from "./pages/AdventureForm.tsx";
 
 export default function App() {
 
@@ -73,6 +76,41 @@ export default function App() {
                             </AuthGuard>
                         }
                     />
+                    <Route
+                        path="/adventures"
+                        element={
+                            <AuthGuard>
+                                <AdventureList />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/adventures/new"
+                        element={
+                            <AuthGuard>
+                                <AdventureForm mode="create" />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/adventures/:id"
+                        element={
+                            <AuthGuard>
+                                <AdventureDetails />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/adventures/:id/edit"
+                        element={
+                            <AuthGuard>
+                                <AdventureForm mode="edit" />
+                            </AuthGuard>
+                        }
+                    />
+                    {/* Глобальные страницы списка всех сессий/заявок если нужны: */}
+                    {/* <Route path="/sessions" element={<GameSessionListGlobal />} /> */}
+                    {/* <Route path="/signups" element={<AdventureSignupListGlobal />} /> */}
                     <Route path="/" element={<Navigate to="/users" replace />} />
                 </Routes>
             </div>
