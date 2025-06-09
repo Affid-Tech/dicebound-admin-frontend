@@ -5,6 +5,8 @@ import AuthGuard from "./components/AuthGuard";
 import LogoutButton from "./components/LogoutButton";
 import UserForm from "./pages/UserForm.tsx";
 import "./App.css";
+import CurrencyRateList from "./pages/CurrencyRateList";
+import CurrencyRateForm from "./pages/CurrencyRateForm";
 import {useState} from "react";
 
 export default function App() {
@@ -44,6 +46,30 @@ export default function App() {
                         element={
                             <AuthGuard>
                                 <UserForm />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/currency-rates"
+                        element={
+                            <AuthGuard>
+                                <CurrencyRateList />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/currency-rates/new"
+                        element={
+                            <AuthGuard>
+                                <CurrencyRateForm />
+                            </AuthGuard>
+                        }
+                    />
+                    <Route
+                        path="/currency-rates/:currency"
+                        element={
+                            <AuthGuard>
+                                <CurrencyRateForm />
                             </AuthGuard>
                         }
                     />
