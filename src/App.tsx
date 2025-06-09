@@ -23,10 +23,10 @@ export default function App() {
 
     return (
         <BrowserRouter>
+            {auth && (
+                <NavigationBar handleLogout={handleLogout}/>
+            )}
             <div>
-                {auth && (
-                    <NavigationBar handleLogout={handleLogout}/>
-                    )}
                 <Routes>
                     <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                     <Route
