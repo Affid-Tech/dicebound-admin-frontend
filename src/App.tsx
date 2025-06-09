@@ -1,8 +1,7 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import {BrowserRouter, Route, Routes} from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import UserList from "./pages/UserList"; // и другие страницы
 import AuthGuard from "./components/AuthGuard";
-import LogoutButton from "./components/LogoutButton";
 import UserForm from "./pages/UserForm.tsx";
 import "./App.css";
 import CurrencyRateList from "./pages/CurrencyRateList";
@@ -11,6 +10,8 @@ import {useState} from "react";
 import AdventureList from "./pages/AdventureList.tsx";
 import AdventureDetails from "./pages/AdventureDetails.tsx";
 import AdventureForm from "./pages/AdventureForm.tsx";
+import Dashboard from "./pages/Dashboard.tsx";
+import NavigationBar from "./components/NavigationBar.tsx";
 
 export default function App() {
 
@@ -24,8 +25,8 @@ export default function App() {
         <BrowserRouter>
             <div>
                 {auth && (
-                    <LogoutButton onLogout={handleLogout} />
-                )}
+                    <NavigationBar handleLogout={handleLogout}/>
+                    )}
                 <Routes>
                     <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
                     <Route
@@ -111,7 +112,14 @@ export default function App() {
                     {/* Глобальные страницы списка всех сессий/заявок если нужны: */}
                     {/* <Route path="/sessions" element={<GameSessionListGlobal />} /> */}
                     {/* <Route path="/signups" element={<AdventureSignupListGlobal />} /> */}
-                    <Route path="/" element={<Navigate to="/users" replace />} />
+                    <Route
+                        path="/"
+                        element={
+                            <AuthGuard>
+                                <Dashboard />
+                            </AuthGuard>
+                        }
+                    />
                 </Routes>
             </div>
         </BrowserRouter>

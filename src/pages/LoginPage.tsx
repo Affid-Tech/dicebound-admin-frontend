@@ -29,7 +29,7 @@ export default function LoginPage({onLogin}: Readonly<LoginPageProps>) {
                 throw new Error("Неверный логин или пароль");
             }
             if (onLogin) onLogin();
-            navigate("/users");
+            navigate("/");
         } catch (e: unknown) {
             if (e instanceof Error) {
                 setError("Ошибка авторизации: " + e.message);
