@@ -1,12 +1,22 @@
-import React, {useState} from "react";
-import {useNavigate} from "react-router-dom";
-import {setBasicAuth} from "../api/fetchWithAuth";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { setBasicAuth } from "../api/fetchWithAuth";
+import {
+    Card,
+    CardContent,
+    Typography,
+    TextField,
+    Button,
+    Alert,
+    Box,
+    Stack
+} from "@mui/material";
 
 interface LoginPageProps {
-    onLogin?: () => void
+    onLogin?: () => void;
 }
 
-export default function LoginPage({onLogin}: Readonly<LoginPageProps>) {
+export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
@@ -19,7 +29,6 @@ export default function LoginPage({onLogin}: Readonly<LoginPageProps>) {
         setBasicAuth(login, password);
 
         try {
-            // Проверочный запрос — любой защищённый, напр. /api/users
             const res = await fetch("/api/users", {
                 headers: {
                     Authorization: "Basic " + btoa(`${login}:${password}`),
@@ -40,26 +49,36 @@ export default function LoginPage({onLogin}: Readonly<LoginPageProps>) {
     };
 
     return (
-        <div style={{padding: 32, maxWidth: 360, margin: "40px auto"}}>
-            <h2>Вход администратора</h2>
-            <form onSubmit={handleSubmit}>
-                <input
-                    type="text"
-                    placeholder="Логин"
-                    value={login}
-                    onChange={e => setLogin(e.target.value)}
-                    style={{width: "100%", marginBottom: 12, padding: 8}}
-                />
-                <input
-                    type="password"
-                    placeholder="Пароль"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    style={{width: "100%", marginBottom: 12, padding: 8}}
-                />
-                <button type="submit" style={{width: "100%"}}>Войти</button>
-                {error && <div style={{color: "red", marginTop: 10}}>{error}</div>}
-            </form>
-        </div>
+        <Card sx={{ maxWidth: 360, mx: "auto", mt: 7, p: 2 }}>
+            <CardContent>
+                <Typography variant="h6" component="h2" align="center" gutterBottom>
+                    Вход администратора
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                    <Stack spacing={2}>
+                        <TextField
+                            label="Логин"
+                            value={login}
+                            onChange={e => setLogin(e.target.value)}
+                            fullWidth
+                            required
+                            autoFocus
+                        />
+                        <TextField
+                            label="Пароль"
+                            type="password"
+                            value={password}
+                            onChange={e => setPassword(e.target.value)}
+                            fullWidth
+                            required
+                        />
+                        <Button type="submit" variant="contained" fullWidth>
+                            Войти
+                        </Button>
+                        {error && <Alert severity="error">{error}</Alert>}
+                    </Stack>
+                </Box>
+            </CardContent>
+        </Card>
     );
 }
