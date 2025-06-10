@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { CurrencyRateService } from "../api/CurrencyRateService";
-import type { CurrencyRateCreateDto, CurrencyRatePatchDto } from "../types/currencyRate";
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {Alert, Box, Button, Card, CardContent, CircularProgress, Stack, TextField, Typography} from "@mui/material";
+import {CurrencyRateService} from "../api/CurrencyRateService";
+import type {CurrencyRateCreateDto, CurrencyRatePatchDto} from "../types/currencyRate";
 
 export default function CurrencyRateForm() {
     const { currency } = useParams<{ currency: string }>();
@@ -17,7 +18,6 @@ export default function CurrencyRateForm() {
     useEffect(() => {
         if (isEdit && currency) {
             setLoading(true);
-            // Получить текущий курс (через list + find, так как GET /currency-rates/{currency} нет)
             CurrencyRateService.list()
                 .then(rates => {
                     const rate = rates.find(r => r.currency === currency);
@@ -42,7 +42,7 @@ export default function CurrencyRateForm() {
         setError(null);
         try {
             if (isEdit && currency) {
-                await CurrencyRateService.patch(currency, currency as CurrencyRatePatchDto);
+                await CurrencyRateService.patch(currency, form as CurrencyRatePatchDto);
             } else {
                 await CurrencyRateService.create(form);
             }
@@ -67,61 +67,77 @@ export default function CurrencyRateForm() {
         }
     };
 
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
-        <div className="card card--narrow">
-            <h2>{isEdit ? `Редактирование курса: ${currency}` : "Добавить курс"}</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Валюта:<br />
-                        <input
+        <Card sx={{ maxWidth: 480, mx: "auto", mt: 4, p: 2 }}>
+            <CardContent>
+                <Typography variant="h6" gutterBottom>
+                    {isEdit ? `Редактирование курса: ${currency}` : "Добавить курс"}
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                    <Stack spacing={2}>
+                        {!isEdit && (<TextField
+                            label="Валюта"
                             name="currency"
-                            type="text"
                             value={form.currency}
                             onChange={handleChange}
                             required
                             disabled={isEdit}
-                            style={{ width: "100%", padding: 8 }}
-                        />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Курс:<br />
-                        <input
+                            fullWidth
+                        />)}
+                        <TextField
+                            label="Курс"
                             name="ratio"
                             type="number"
                             value={form.ratio}
                             onChange={handleChange}
-                            min={1}
-                            step={1}
+                            slotProps={{
+                                input: { min: 1, step: 1 }
+                            }}
                             required
-                            style={{ width: "100%", padding: 8 }}
+                            fullWidth
                         />
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" disabled={saving} style={{ marginRight: 10 }}>
-                        {isEdit ? "Сохранить" : "Добавить"}
-                    </button>
-                    <button type="button" onClick={() => navigate("/currency-rates")}>
-                        Назад
-                    </button>
-                    {isEdit && (
-                        <button
-                            type="button"
-                            style={{ float: "right", color: "red" }}
-                            onClick={handleDelete}
-                            disabled={saving}
-                        >
-                            Удалить
-                        </button>
-                    )}
-                </div>
-                {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
-            </form>
-        </div>
+
+                        {error && <Alert severity="error">{error}</Alert>}
+
+                        <Box display="flex" gap={1} mt={2}>
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={saving}
+                            >
+                                {isEdit ? "Сохранить" : "Добавить"}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={() => navigate("/currency-rates")}
+                                disabled={saving}
+                            >
+                                Назад
+                            </Button>
+                            {isEdit && (
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={handleDelete}
+                                    disabled={saving}
+                                    sx={{ marginLeft: "auto" }}
+                                >
+                                    Удалить
+                                </Button>
+                            )}
+                        </Box>
+                    </Stack>
+                </Box>
+            </CardContent>
+        </Card>
     );
 }

@@ -1,7 +1,9 @@
-import { useEffect, useState } from "react";
-import { CurrencyRateService } from "../api/CurrencyRateService";
-import type { CurrencyRateDto } from "../types/currencyRate";
-import { useNavigate } from "react-router-dom";
+import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {Alert, Box, Card, CardContent, CircularProgress, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
+import AddIcon from "@mui/icons-material/Add";
+import {CurrencyRateService} from "../api/CurrencyRateService";
+import type {CurrencyRateDto} from "../types/currencyRate";
 
 export default function CurrencyRateList() {
     const [rates, setRates] = useState<CurrencyRateDto[]>([]);
@@ -17,29 +19,61 @@ export default function CurrencyRateList() {
     }, []);
 
     return (
-        <div className="card card--narrow">
-            <h1>Курсы валют</h1>
-            <button onClick={() => navigate("/currency-rates/new")}>Добавить курс</button>
-            {loading && <div>Загрузка...</div>}
-            {error && <div style={{ color: "red" }}>{error}</div>}
-            <table style={{ marginTop: 24, width: "100%" }}>
-                <thead>
-                <tr>
-                    <th>Валюта</th>
-                    <th>Курс</th>
-                    <th>Обновлён</th>
-                </tr>
-                </thead>
-                <tbody>
-                {rates.map(r => (
-                    <tr key={r.currency} onClick={() => navigate(`/currency-rates/${r.currency}`)}>
-                        <td>{r.currency}</td>
-                        <td>{r.ratio}</td>
-                        <td>{new Date(r.updatedAt).toLocaleString()}</td>
-                    </tr>
-                ))}
-                </tbody>
-            </table>
-        </div>
+        <Card sx={{ maxWidth: 600, margin: "24px auto", p: 2 }}>
+            <CardContent>
+                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                    <Typography variant="h5" component="h1">
+                        Курсы валют
+                    </Typography>
+                    <Tooltip title="Добавить курс">
+                        <IconButton
+                            color="primary"
+                            onClick={() => navigate("/currency-rates/new")}
+                            size="medium"
+                        >
+                            <AddIcon />
+                        </IconButton>
+                    </Tooltip>
+                </Box>
+                {loading && (
+                    <Box display="flex" justifyContent="center" my={4}>
+                        <CircularProgress />
+                    </Box>
+                )}
+                {error && (
+                    <Alert severity="error" sx={{ mb: 2 }}>
+                        {error}
+                    </Alert>
+                )}
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Валюта</TableCell>
+                            <TableCell>Курс</TableCell>
+                            <TableCell>Обновлён</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {rates.map((r) => (
+                            <TableRow
+                                key={r.currency}
+                                hover
+                                sx={{ cursor: "pointer" }}
+                                onClick={() => navigate(`/currency-rates/${r.currency}`)}
+                            >
+                                <TableCell>{r.currency}</TableCell>
+                                <TableCell>{r.ratio}</TableCell>
+                                <TableCell>{new Date(r.updatedAt).toLocaleString()}</TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+                {(!loading && rates.length === 0 && !error) && (
+                    <Typography variant="body2" color="text.secondary" align="center" mt={2}>
+                        Нет данных о курсах валют.
+                    </Typography>
+                )}
+            </CardContent>
+        </Card>
     );
 }
