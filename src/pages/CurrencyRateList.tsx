@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Alert, Box, Card, CardContent, CircularProgress, IconButton, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
+import {Alert, Box, Card, CardContent, CircularProgress, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography} from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import {CurrencyRateService} from "../api/CurrencyRateService";
 import type {CurrencyRateDto} from "../types/currencyRate";
@@ -26,13 +26,10 @@ export default function CurrencyRateList() {
                         Курсы валют
                     </Typography>
                     <Tooltip title="Добавить курс">
-                        <IconButton
-                            color="primary"
-                            onClick={() => navigate("/currency-rates/new")}
-                            size="medium"
-                        >
-                            <AddIcon />
-                        </IconButton>
+                        <AddIcon color="primary"
+                                 onClick={() => navigate("/currency-rates/new")}
+                                 sx={{cursor: "pointer", color: "primary.main", fontSize: 22, '&:hover': {color: "#000"}}}
+                        />
                     </Tooltip>
                 </Box>
                 {loading && (
