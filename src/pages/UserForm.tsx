@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { UserService } from "../api/UserService";
-import type { UserRole, UserCreateDto, UserPatchDto } from "../types/user";
+import React, {useEffect, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {UserService} from "../api/UserService";
+import type {UserCreateDto, UserPatchDto, UserRole} from "../types/user";
 import D20 from "../components/D20.tsx";
+import {Alert, Box, Button, Card, CardContent, Checkbox, CircularProgress, FormControlLabel, FormGroup, Stack, TextField, Typography} from "@mui/material";
 
 const allRoles: UserRole[] = ["PLAYER", "DUNGEON_MASTER", "ADMIN"];
 
@@ -133,103 +134,116 @@ export default function UserForm() {
         }
     };
 
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) {
+        return (
+            <Box display="flex" justifyContent="center" alignItems="center" height={200}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
-        <div className="card card--narrow">
-            <div style={{ textAlign: "center" }}>
-                <D20 style={{ width: 60, height: 60 }} />
-            </div>
-            <h2>{isEdit ? "Редактирование пользователя" : "Создать пользователя"}</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Имя:<br />
-                        <input
+        <Card sx={{ maxWidth: 480, mx: "auto", mt: 4, p: 2 }}>
+            <CardContent>
+                <Box textAlign="center" mb={2}>
+                    <D20 style={{ width: 60, height: 60 }} />
+                </Box>
+                <Typography variant="h6" gutterBottom align="center">
+                    {isEdit ? "Редактирование пользователя" : "Создать пользователя"}
+                </Typography>
+                <Box component="form" onSubmit={handleSubmit} noValidate>
+                    <Stack spacing={2}>
+                        <TextField
+                            label="Имя"
                             name="name"
-                            type="text"
                             value={form.name}
                             onChange={handleChange}
                             required
-                            style={{ width: "100%", padding: 8 }}
+                            fullWidth
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Email:<br />
-                        <input
+                        <TextField
+                            label="Email"
                             name="email"
                             type="email"
                             value={form.email}
                             onChange={handleChange}
-                            style={{ width: "100%", padding: 8 }}
+                            fullWidth
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Bio:<br />
-                        <textarea
+                        <TextField
+                            label="Bio"
                             name="bio"
                             value={form.bio}
                             onChange={handleChange}
-                            rows={3}
-                            style={{ width: "100%", padding: 8 }}
+                            fullWidth
+                            multiline
+                            minRows={3}
                         />
-                    </label>
-                </div>
-                {/* Роли */}
-                <div style={{ marginBottom: 12 }}>
-                    <span>Роли:</span>
-                    <div>
-                        {allRoles.map((role) => (
-                            <label key={role} style={{ marginRight: 12 }}>
-                                <input
-                                    type="checkbox"
-                                    checked={form.roles?.includes(role)}
-                                    onChange={e =>
-                                        isEdit
-                                            ? handleRoleToggle(role, e.target.checked)
-                                            : setForm((prev) => ({
-                                                ...prev,
-                                                roles: e.target.checked
-                                                    ? [...(prev.roles ?? []), role]
-                                                    : (prev.roles ?? []).filter((r) => r !== role),
-                                            }))
-                                    }
-                                    disabled={isEdit && (!id || roleLoading === role)}
-                                />
-                                {role}
-                            </label>
-                        ))}
-                        {!isEdit && (
-                            <div style={{ fontSize: 12, color: "#888" }}>
-                                Роли можно назначить сразу, либо после создания пользователя.
-                            </div>
-                        )}
-                    </div>
-                </div>
-                <div>
-                    <button type="submit" disabled={saving} style={{ marginRight: 10 }}>
-                        {isEdit ? "Сохранить" : "Создать"}
-                    </button>
-                    <button type="button" onClick={() => navigate("/users")}>
-                        Назад
-                    </button>
-                    {isEdit && (
-                        <button
-                            type="button"
-                            style={{ float: "right", color: "red" }}
-                            onClick={handleDelete}
-                            disabled={saving}
-                        >
-                            Удалить
-                        </button>
-                    )}
-                </div>
-                {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
-            </form>
-        </div>
+                        <Box>
+                            <Typography variant="subtitle2" mb={0.5}>
+                                Роли:
+                            </Typography>
+                            <FormGroup row>
+                                {allRoles.map((role) => (
+                                    <FormControlLabel
+                                        key={role}
+                                        control={
+                                            <Checkbox
+                                                checked={form.roles?.includes(role)}
+                                                onChange={e =>
+                                                    isEdit
+                                                        ? handleRoleToggle(role, e.target.checked)
+                                                        : setForm((prev) => ({
+                                                            ...prev,
+                                                            roles: e.target.checked
+                                                                ? [...(prev.roles ?? []), role]
+                                                                : (prev.roles ?? []).filter((r) => r !== role),
+                                                        }))
+                                                }
+                                                disabled={isEdit && (!id || roleLoading === role)}
+                                            />
+                                        }
+                                        label={role}
+                                    />
+                                ))}
+                            </FormGroup>
+                            {!isEdit && (
+                                <Typography variant="caption" color="text.secondary">
+                                    Роли можно назначить сразу, либо после создания пользователя.
+                                </Typography>
+                            )}
+                        </Box>
+                        {error && <Alert severity="error">{error}</Alert>}
+                        <Box display="flex" gap={1} mt={1}>
+                            <Button
+                                variant="contained"
+                                type="submit"
+                                disabled={saving}
+                            >
+                                {isEdit ? "Сохранить" : "Создать"}
+                            </Button>
+                            <Button
+                                variant="outlined"
+                                color="secondary"
+                                onClick={() => navigate("/users")}
+                                disabled={saving}
+                            >
+                                Назад
+                            </Button>
+                            {isEdit && (
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={handleDelete}
+                                    disabled={saving}
+                                    sx={{ marginLeft: "auto" }}
+                                >
+                                    Удалить
+                                </Button>
+                            )}
+                        </Box>
+                    </Stack>
+                </Box>
+            </CardContent>
+        </Card>
     );
 }
