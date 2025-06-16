@@ -1,8 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React, {type SyntheticEvent, useEffect, useState} from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { AdventureService } from "../api/AdventureService";
 import { UserService } from "../api/UserService";
-import type { AdventureDto, AdventureCreateDto, AdventurePatchDto, AdventureType } from "../types/adventure";
+import type {
+    AdventureDto,
+    AdventureCreateDto,
+    AdventurePatchDto,
+    AdventureType,
+} from "../types/adventure";
 import type { UserDto } from "../types/user";
 import {
     Grid,
@@ -14,7 +19,11 @@ import {
     Button,
     InputLabel,
     FormControl,
-    FormHelperText, type SelectChangeEvent,
+    FormHelperText,
+    Paper,
+    CircularProgress,
+    Alert,
+    Autocomplete, type SelectChangeEvent,
 } from "@mui/material";
 
 const adventureTypes: { value: AdventureType; label: string }[] = [
@@ -23,7 +32,16 @@ const adventureTypes: { value: AdventureType; label: string }[] = [
     { value: "CAMPAIGN", label: "Campaign" },
 ];
 
-export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "edit" }>) {
+type Validation = {
+    title?: string;
+    dungeonMasterId?: string;
+    minPlayers?: string;
+    maxPlayers?: string;
+};
+
+export default function AdventureForm({
+                                          mode,
+                                      }: Readonly<{ mode?: "create" | "edit" }>) {
     const { id } = useParams<{ id: string }>();
     const isEdit = mode === "edit";
     const navigate = useNavigate();
@@ -43,10 +61,12 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
     const [loading, setLoading] = useState(isEdit);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [validation, setValidation] = useState<Validation>({});
+    const [success, setSuccess] = useState(false);
 
     useEffect(() => {
         UserService.list()
-            .then(all => setUsers(all.filter(u => u.roles.includes("DUNGEON_MASTER"))))
+            .then((all) => setUsers(all.filter((u) => u.roles.includes("DUNGEON_MASTER"))))
             .catch(() => setUsers([]));
     }, []);
 
@@ -67,24 +87,33 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                         priceUnits: data.priceUnits,
                     })
                 )
-                .catch(e => setError(e.message))
+                .catch((e) => setError(e.message))
                 .finally(() => setLoading(false));
         }
     }, [isEdit, id]);
 
-    const handleSelectChange = (e: SelectChangeEvent<string>) => {
-        const { name, value } = e.target;
-        setForm(prev => ({
-            ...prev,
-            [name]: value,
-        }));
-    };
+    // ---- Validation
+    useEffect(() => {
+        const newValidation: Validation = {};
+        if (!form.title?.trim()) newValidation.title = "Укажите название приключения";
+        if (!form.dungeonMasterId) newValidation.dungeonMasterId = "Выберите мастера";
+        if (
+            form.minPlayers !== undefined &&
+            form.maxPlayers !== undefined &&
+            form.minPlayers > form.maxPlayers
+        ) {
+            newValidation.minPlayers = "Мин. игроков не может быть больше макс.";
+            newValidation.maxPlayers = "Макс. игроков не может быть меньше мин.";
+        }
+        setValidation(newValidation);
+    }, [form.title, form.dungeonMasterId, form.minPlayers, form.maxPlayers]);
 
+    // ---- Handlers
     const handleInputChange = (
         e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
         const { name, value } = e.target;
-        setForm(prev => ({
+        setForm((prev) => ({
             ...prev,
             [name]:
                 name === "minPlayers" ||
@@ -96,17 +125,40 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
         }));
     };
 
+    const handleSelectChange = (_e: SyntheticEvent<Element, Event>, newValue: UserDto | null) => {
+        setForm((prev) => ({
+            ...prev,
+            dungeonMasterId: newValue?.id ?? "",
+        }));
+    };
+
+    const handleTypeChange = (event: SelectChangeEvent<AdventureType>) => {
+        setForm(prev => ({
+            ...prev,
+            type: event.target.value,
+        }));
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSaving(true);
         setError(null);
+        setSuccess(false);
+
+        // Client validation before send
+        if (Object.keys(validation).length > 0) {
+            setSaving(false);
+            return;
+        }
+
         try {
             if (isEdit && id) {
                 await AdventureService.patch(id, form as AdventurePatchDto);
             } else {
                 await AdventureService.create(form as AdventureCreateDto);
             }
-            navigate("/adventures");
+            setSuccess(true);
+            setTimeout(() => navigate("/adventures"), 1200);
         } catch (err: unknown) {
             if (err instanceof Error) setError(err.message);
             else setError("Ошибка сохранения");
@@ -127,14 +179,34 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
         }
     };
 
-    if (loading) return <Typography>Загрузка...</Typography>;
+    if (loading)
+        return (
+            <Box sx={{ py: 6, textAlign: "center" }}>
+                <CircularProgress />
+            </Box>
+        );
 
     return (
-        <Box sx={{ maxWidth: 600, mx: "auto", mt: 3, p: 3, bgcolor: "background.paper", borderRadius: 3, boxShadow: 3 }}>
+        <Paper elevation={3} sx={{ maxWidth: 650, mx: "auto", mt: 4, p: { xs: 2, sm: 4 } }}>
             <Typography variant="h5" mb={2}>
                 {isEdit ? "Редактировать приключение" : "Создать приключение"}
             </Typography>
+            {error && (
+                <Alert severity="error" sx={{ mb: 2 }}>
+                    {error}
+                </Alert>
+            )}
+            {success && (
+                <Alert severity="success" sx={{ mb: 2 }}>
+                    Успешно сохранено!
+                </Alert>
+            )}
+
             <form onSubmit={handleSubmit} autoComplete="off">
+                {/* Основная информация */}
+                <Typography variant="subtitle1" sx={{ mb: 1, mt: 2 }}>
+                    Основная информация
+                </Typography>
                 <Grid container spacing={2}>
                     <Grid size={{ xs: 12 }}>
                         <TextField
@@ -144,6 +216,9 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                             value={form.title ?? ""}
                             onChange={handleInputChange}
                             required
+                            error={!!validation.title}
+                            helperText={validation.title || "Придумайте запоминающееся название для игры"}
+                            inputProps={{ maxLength: 70 }}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
@@ -153,43 +228,47 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                                 labelId="type-label"
                                 name="type"
                                 value={form.type ?? "ONESHOT"}
-                                onChange={handleSelectChange}
+                                onChange={handleTypeChange}
                                 label="Тип"
                             >
-                                {adventureTypes.map(t => (
-                                    <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                                {adventureTypes.map((t) => (
+                                    <MenuItem key={t.value} value={t.value}>
+                                        {t.label}
+                                    </MenuItem>
                                 ))}
                             </Select>
+                            <FormHelperText>Выберите формат: Oneshot, Multishot или Campaign</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                             fullWidth
-                            label="Система"
+                            label="Система *"
                             name="gameSystem"
                             value={form.gameSystem ?? ""}
                             onChange={handleInputChange}
                             required
+                            helperText="Например: D&D 5e, Pathfinder 2, Fate, и т.д."
                         />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
-                        <FormControl fullWidth required>
-                            <InputLabel id="dungeonMasterId-label">Мастер</InputLabel>
-                            <Select
-                                labelId="dungeonMasterId-label"
-                                name="dungeonMasterId"
-                                value={form.dungeonMasterId ?? ""}
-                                onChange={handleSelectChange}
-                                label="Мастер"
-                            >
-                                <MenuItem value="" disabled>Выберите...</MenuItem>
-                                {users.map(u => (
-                                    <MenuItem key={u.id} value={u.id}>
-                                        {u.name} ({u.email})
-                                    </MenuItem>
-                                ))}
-                            </Select>
-                        </FormControl>
+                        <Autocomplete
+                            options={users}
+                            getOptionLabel={(option) => option.name + (option.email ? ` (${option.email})` : "")}
+                            value={users.find((u) => u.id === form.dungeonMasterId) || null}
+                            onChange={handleSelectChange}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    label="Мастер"
+                                    required
+                                    error={!!validation.dungeonMasterId}
+                                    helperText={validation.dungeonMasterId || "Кто будет вести приключение"}
+                                />
+                            )}
+                            isOptionEqualToValue={(option, value) => option.id === value.id}
+                            clearOnBlur
+                        />
                     </Grid>
                     <Grid size={{ xs: 12 }}>
                         <TextField
@@ -200,8 +279,16 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                             onChange={handleInputChange}
                             multiline
                             minRows={3}
+                            helperText="Опишите сюжет, жанр или пожелания к участникам"
                         />
                     </Grid>
+                </Grid>
+
+                {/* Ограничения */}
+                <Typography variant="subtitle1" sx={{ mb: 1, mt: 4 }}>
+                    Ограничения и параметры
+                </Typography>
+                <Grid container spacing={2}>
                     <Grid size={{ xs: 6, sm: 3 }}>
                         <TextField
                             fullWidth
@@ -210,31 +297,36 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                             type="number"
                             value={form.startLevel ?? ""}
                             onChange={handleInputChange}
-                            slotProps={{ htmlInput: { min: 1, max: 20}}}
+                            inputProps={{ min: 1, max: 20 }}
+                            helperText="1-20 (D&D, по желанию)"
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
                         <TextField
                             fullWidth
-                            label="Мин. игроков"
+                            label="Мин. игроков *"
                             name="minPlayers"
                             type="number"
                             value={form.minPlayers ?? ""}
                             onChange={handleInputChange}
-                            slotProps={{ htmlInput: { min: 1, max: 12}}}
+                            inputProps={{ min: 1, max: 12 }}
                             required
+                            error={!!validation.minPlayers}
+                            helperText={validation.minPlayers || "Минимальное число участников"}
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
                         <TextField
                             fullWidth
-                            label="Макс. игроков"
+                            label="Макс. игроков *"
                             name="maxPlayers"
                             type="number"
                             value={form.maxPlayers ?? ""}
                             onChange={handleInputChange}
-                            slotProps={{ htmlInput: { min: form.minPlayers ?? 1, max: 16}}}
+                            inputProps={{ min: form.minPlayers ?? 1, max: 16 }}
                             required
+                            error={!!validation.maxPlayers}
+                            helperText={validation.maxPlayers || "Максимальное число участников"}
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
@@ -245,15 +337,32 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                             type="number"
                             value={form.priceUnits ?? ""}
                             onChange={handleInputChange}
-                            slotProps={{ htmlInput: { min: 0}}}
+                            inputProps={{ min: 0 }}
+                            InputProps={{
+                                endAdornment: <span style={{ opacity: 0.7, marginLeft: 4 }}>🪙</span>,
+                            }}
+                            helperText="Оставьте пустым, если игра бесплатная"
                         />
                     </Grid>
-                    <Grid size={{ xs: 12 }} mt={2}>
+                </Grid>
+
+                {/* Actions */}
+                <Grid container spacing={2} sx={{ mt: 2 }}>
+                    <Grid size={{ xs: 12 }}>
                         <Box sx={{ display: "flex", gap: 2 }}>
-                            <Button type="submit" variant="contained" color="primary" disabled={saving}>
-                                {isEdit ? "Сохранить" : "Создать"}
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                disabled={saving || Object.keys(validation).length > 0}
+                            >
+                                {saving ? <CircularProgress size={20} color="inherit" /> : isEdit ? "Сохранить" : "Создать"}
                             </Button>
-                            <Button variant="outlined" onClick={() => navigate("/adventures")}>
+                            <Button
+                                variant="outlined"
+                                onClick={() => navigate("/adventures")}
+                                disabled={saving}
+                            >
                                 Назад
                             </Button>
                             {isEdit && (
@@ -268,14 +377,9 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
                                 </Button>
                             )}
                         </Box>
-                        {error && (
-                            <FormHelperText error sx={{ mt: 2 }}>
-                                {error}
-                            </FormHelperText>
-                        )}
                     </Grid>
                 </Grid>
             </form>
-        </Box>
+        </Paper>
     );
 }
