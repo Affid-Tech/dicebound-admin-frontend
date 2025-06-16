@@ -4,6 +4,18 @@ import { AdventureService } from "../api/AdventureService";
 import { UserService } from "../api/UserService";
 import type { AdventureDto, AdventureCreateDto, AdventurePatchDto, AdventureType } from "../types/adventure";
 import type { UserDto } from "../types/user";
+import {
+    Grid,
+    Box,
+    Typography,
+    TextField,
+    Select,
+    MenuItem,
+    Button,
+    InputLabel,
+    FormControl,
+    FormHelperText, type SelectChangeEvent,
+} from "@mui/material";
 
 const adventureTypes: { value: AdventureType; label: string }[] = [
     { value: "ONESHOT", label: "Oneshot" },
@@ -32,14 +44,12 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Загружаем мастеров
     useEffect(() => {
         UserService.list()
             .then(all => setUsers(all.filter(u => u.roles.includes("DUNGEON_MASTER"))))
             .catch(() => setUsers([]));
     }, []);
 
-    // Если edit — грузим adventure и заполняем форму
     useEffect(() => {
         if (isEdit && id) {
             setLoading(true);
@@ -62,12 +72,25 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
         }
     }, [isEdit, id]);
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+    const handleSelectChange = (e: SelectChangeEvent<string>) => {
+        const { name, value } = e.target;
+        setForm(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+    };
+
+    const handleInputChange = (
+        e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
         const { name, value } = e.target;
         setForm(prev => ({
             ...prev,
             [name]:
-                name === "minPlayers" || name === "maxPlayers" || name === "priceUnits" || name === "startLevel"
+                name === "minPlayers" ||
+                name === "maxPlayers" ||
+                name === "priceUnits" ||
+                name === "startLevel"
                     ? value === "" ? undefined : Number(value)
                     : value,
         }));
@@ -104,162 +127,155 @@ export default function AdventureForm({ mode }: Readonly<{ mode?: "create" | "ed
         }
     };
 
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) return <Typography>Загрузка...</Typography>;
 
     return (
-        <div className="card card--narrow">
-            <h2>{isEdit ? "Редактировать приключение" : "Создать приключение"}</h2>
-            <form onSubmit={handleSubmit}>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Название:<br />
-                        <input
+        <Box sx={{ maxWidth: 600, mx: "auto", mt: 3, p: 3, bgcolor: "background.paper", borderRadius: 3, boxShadow: 3 }}>
+            <Typography variant="h5" mb={2}>
+                {isEdit ? "Редактировать приключение" : "Создать приключение"}
+            </Typography>
+            <form onSubmit={handleSubmit} autoComplete="off">
+                <Grid container spacing={2}>
+                    <Grid size={{ xs: 12 }}>
+                        <TextField
+                            fullWidth
+                            label="Название"
                             name="title"
-                            type="text"
                             value={form.title ?? ""}
-                            onChange={handleChange}
+                            onChange={handleInputChange}
                             required
-                            style={{ width: "100%", padding: 8 }}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Тип:<br />
-                        <select
-                            name="type"
-                            value={form.type ?? "ONESHOT"}
-                            onChange={handleChange}
-                            required
-                            style={{ width: "100%", padding: 8 }}
-                        >
-                            {adventureTypes.map(t => (
-                                <option key={t.value} value={t.value}>{t.label}</option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Система:<br />
-                        <input
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <FormControl fullWidth required>
+                            <InputLabel id="type-label">Тип</InputLabel>
+                            <Select
+                                labelId="type-label"
+                                name="type"
+                                value={form.type ?? "ONESHOT"}
+                                onChange={handleSelectChange}
+                                label="Тип"
+                            >
+                                {adventureTypes.map(t => (
+                                    <MenuItem key={t.value} value={t.value}>{t.label}</MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <TextField
+                            fullWidth
+                            label="Система"
                             name="gameSystem"
-                            type="text"
                             value={form.gameSystem ?? ""}
-                            onChange={handleChange}
+                            onChange={handleInputChange}
                             required
-                            style={{ width: "100%", padding: 8 }}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Мастер:<br />
-                        <select
-                            name="dungeonMasterId"
-                            value={form.dungeonMasterId ?? ""}
-                            onChange={handleChange}
-                            required
-                            style={{ width: "100%", padding: 8 }}
-                        >
-                            <option value="" disabled>Выберите...</option>
-                            {users.map(u => (
-                                <option key={u.id} value={u.id}>
-                                    {u.name} ({u.email})
-                                </option>
-                            ))}
-                        </select>
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Описание:<br />
-                        <textarea
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        <FormControl fullWidth required>
+                            <InputLabel id="dungeonMasterId-label">Мастер</InputLabel>
+                            <Select
+                                labelId="dungeonMasterId-label"
+                                name="dungeonMasterId"
+                                value={form.dungeonMasterId ?? ""}
+                                onChange={handleSelectChange}
+                                label="Мастер"
+                            >
+                                <MenuItem value="" disabled>Выберите...</MenuItem>
+                                {users.map(u => (
+                                    <MenuItem key={u.id} value={u.id}>
+                                        {u.name} ({u.email})
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12 }}>
+                        <TextField
+                            fullWidth
+                            label="Описание"
                             name="description"
                             value={form.description ?? ""}
-                            onChange={handleChange}
-                            rows={3}
-                            style={{ width: "100%", padding: 8 }}
+                            onChange={handleInputChange}
+                            multiline
+                            minRows={3}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Стартовый уровень:<br />
-                        <input
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                        <TextField
+                            fullWidth
+                            label="Стартовый уровень"
                             name="startLevel"
                             type="number"
                             value={form.startLevel ?? ""}
-                            onChange={handleChange}
-                            min={1}
-                            max={20}
-                            style={{ width: "100%", padding: 8 }}
+                            onChange={handleInputChange}
+                            slotProps={{ htmlInput: { min: 1, max: 20}}}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Минимум игроков:<br />
-                        <input
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                        <TextField
+                            fullWidth
+                            label="Мин. игроков"
                             name="minPlayers"
                             type="number"
                             value={form.minPlayers ?? ""}
-                            onChange={handleChange}
-                            min={1}
-                            max={12}
+                            onChange={handleInputChange}
+                            slotProps={{ htmlInput: { min: 1, max: 12}}}
                             required
-                            style={{ width: "100%", padding: 8 }}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Максимум игроков:<br />
-                        <input
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                        <TextField
+                            fullWidth
+                            label="Макс. игроков"
                             name="maxPlayers"
                             type="number"
                             value={form.maxPlayers ?? ""}
-                            onChange={handleChange}
-                            min={form.minPlayers ?? 1}
-                            max={16}
+                            onChange={handleInputChange}
+                            slotProps={{ htmlInput: { min: form.minPlayers ?? 1, max: 16}}}
                             required
-                            style={{ width: "100%", padding: 8 }}
                         />
-                    </label>
-                </div>
-                <div style={{ marginBottom: 12 }}>
-                    <label>
-                        Цена (единиц):<br />
-                        <input
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                        <TextField
+                            fullWidth
+                            label="Цена (единиц)"
                             name="priceUnits"
                             type="number"
                             value={form.priceUnits ?? ""}
-                            onChange={handleChange}
-                            min={0}
-                            style={{ width: "100%", padding: 8 }}
+                            onChange={handleInputChange}
+                            slotProps={{ htmlInput: { min: 0}}}
                         />
-                    </label>
-                </div>
-                <div>
-                    <button type="submit" disabled={saving} style={{ marginRight: 10 }}>
-                        {isEdit ? "Сохранить" : "Создать"}
-                    </button>
-                    <button type="button" onClick={() => navigate("/adventures")}>
-                        Назад
-                    </button>
-                    {isEdit && (
-                        <button
-                            type="button"
-                            style={{ float: "right", color: "red" }}
-                            onClick={handleDelete}
-                            disabled={saving}
-                        >
-                            Удалить
-                        </button>
-                    )}
-                </div>
-                {error && <div style={{ color: "red", marginTop: 10 }}>{error}</div>}
+                    </Grid>
+                    <Grid size={{ xs: 12 }} mt={2}>
+                        <Box sx={{ display: "flex", gap: 2 }}>
+                            <Button type="submit" variant="contained" color="primary" disabled={saving}>
+                                {isEdit ? "Сохранить" : "Создать"}
+                            </Button>
+                            <Button variant="outlined" onClick={() => navigate("/adventures")}>
+                                Назад
+                            </Button>
+                            {isEdit && (
+                                <Button
+                                    variant="outlined"
+                                    color="error"
+                                    onClick={handleDelete}
+                                    disabled={saving}
+                                    sx={{ marginLeft: "auto" }}
+                                >
+                                    Удалить
+                                </Button>
+                            )}
+                        </Box>
+                        {error && (
+                            <FormHelperText error sx={{ mt: 2 }}>
+                                {error}
+                            </FormHelperText>
+                        )}
+                    </Grid>
+                </Grid>
             </form>
-        </div>
+        </Box>
     );
 }

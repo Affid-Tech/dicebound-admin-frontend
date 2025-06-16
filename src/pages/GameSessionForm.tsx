@@ -1,8 +1,14 @@
-// src/pages/GameSessionForm.tsx
-
 import React, { useEffect, useState } from "react";
 import { GameSessionService } from "../api/GameSessionService";
 import type { GameSessionCreateDto, GameSessionDto, GameSessionPatchDto } from "../types/gameSession";
+import {
+    Box,
+    Typography,
+    TextField,
+    Button,
+    FormHelperText,
+    CircularProgress,
+} from "@mui/material";
 
 function toOffsetDateTime(localDateTime: string) {
     // localDateTime: "2025-06-09T18:00"
@@ -88,51 +94,76 @@ export default function GameSessionForm({
         }
     };
 
-    if (loading) return <div>Загрузка...</div>;
+    if (loading) {
+        return (
+            <Box sx={{ py: 3, display: "flex", justifyContent: "center" }}>
+                <CircularProgress />
+            </Box>
+        );
+    }
 
     return (
-        <form onSubmit={handleSubmit} style={{ margin: "20px 0" }}>
-            <h4>{sessionId ? "Редактировать сессию" : "Создать сессию"}</h4>
-            <input
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ my: 3, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}
+        >
+            <Typography variant="subtitle1" sx={{ minWidth: 170 }}>
+                {sessionId ? "Редактировать сессию" : "Создать сессию"}
+            </Typography>
+            <TextField
                 name="startTime"
                 type="datetime-local"
                 value={form.startTime ? form.startTime.slice(0, 16) : ""}
                 onChange={handleChange}
                 required
-                style={{ marginRight: 10 }}
+                size="small"
+                label="Дата и время"
+                sx={{ minWidth: 210 }}
+                slotProps={{ inputLabel: { shrink: true }}}
             />
-            <input
+            <TextField
                 name="durationHours"
                 type="number"
                 value={form.durationHours}
-                min={1}
-                max={24}
                 onChange={handleChange}
-                placeholder="Длительность (ч)"
+                slotProps={{ htmlInput: { min: 1, max: 24}}}
                 required
-                style={{ width: 80, marginRight: 10 }}
+                size="small"
+                label="Длительность (ч)"
+                sx={{ width: 120 }}
             />
-            <input
+            <TextField
                 name="linkFoundry"
                 type="text"
                 value={form.linkFoundry}
                 onChange={handleChange}
-                placeholder="Ссылка на Foundry"
-                style={{ width: 180, marginRight: 10 }}
+                size="small"
+                label="Ссылка на Foundry"
+                sx={{ minWidth: 180 }}
             />
-            <input
+            <TextField
                 name="notes"
                 type="text"
                 value={form.notes}
                 onChange={handleChange}
-                placeholder="Заметки"
-                style={{ width: 120, marginRight: 10 }}
+                size="small"
+                label="Заметки"
+                sx={{ minWidth: 120 }}
             />
-            <button type="submit" disabled={saving}>{sessionId ? "Сохранить" : "Добавить"}</button>
+            <Button type="submit" variant="contained" color="primary" disabled={saving}>
+                {sessionId ? "Сохранить" : "Добавить"}
+            </Button>
             {onCancel && (
-                <button type="button" onClick={onCancel} style={{ marginLeft: 10 }}>Отмена</button>
+                <Button type="button" variant="outlined" color="inherit" onClick={onCancel}>
+                    Отмена
+                </Button>
             )}
-            {error && <span style={{ color: "red", marginLeft: 10 }}>{error}</span>}
-        </form>
+            {error && (
+                <FormHelperText error sx={{ ml: 2 }}>
+                    {error}
+                </FormHelperText>
+            )}
+        </Box>
     );
 }

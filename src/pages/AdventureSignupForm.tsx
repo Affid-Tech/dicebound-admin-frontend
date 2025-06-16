@@ -2,15 +2,30 @@ import React, { useState, useEffect } from "react";
 import { AdventureSignupService } from "../api/AdventureSignupService";
 import { UserService } from "../api/UserService";
 import type { UserDto } from "../types/user";
+import {
+    Box,
+    Typography,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Button,
+    FormHelperText,
+} from "@mui/material";
 
-export default function AdventureSignupForm({ adventureId, onCreated }: Readonly<{ adventureId: string, onCreated: () => void }>) {
+export default function AdventureSignupForm({
+                                                adventureId,
+                                                onCreated,
+                                            }: Readonly<{ adventureId: string; onCreated: () => void }>) {
     const [users, setUsers] = useState<UserDto[]>([]);
     const [userId, setUserId] = useState("");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
-        UserService.list().then(setUsers).catch(() => setUsers([]));
+        UserService.list()
+            .then(setUsers)
+            .catch(() => setUsers([]));
     }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -34,16 +49,43 @@ export default function AdventureSignupForm({ adventureId, onCreated }: Readonly
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ margin: "20px 0" }}>
-            <h4>Добавить запись на игру</h4>
-            <select value={userId} onChange={e => setUserId(e.target.value)} required>
-                <option value="">Выберите игрока…</option>
-                {users.map(u => (
-                    <option key={u.id} value={u.id}>{u.name} ({u.email})</option>
-                ))}
-            </select>
-            <button type="submit" disabled={saving} style={{ marginLeft: 10 }}>Добавить</button>
-            {error && <span style={{ color: "red", marginLeft: 10 }}>{error}</span>}
-        </form>
+        <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ my: 3, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}
+        >
+            <Typography variant="subtitle1" sx={{ mr: 2, minWidth: 170 }}>
+                Добавить запись на игру
+            </Typography>
+            <FormControl required sx={{ minWidth: 220 }}>
+                <InputLabel id="signup-user-label">Игрок</InputLabel>
+                <Select
+                    labelId="signup-user-label"
+                    value={userId}
+                    label="Игрок"
+                    onChange={e => setUserId(e.target.value)}
+                    size="small"
+                >
+                    <MenuItem value="">
+                        <em>Выберите игрока…</em>
+                    </MenuItem>
+                    {users.map(u => (
+                        <MenuItem key={u.id} value={u.id}>
+                            {u.name} ({u.email})
+                        </MenuItem>
+                    ))}
+                </Select>
+                {error && <FormHelperText error>{error}</FormHelperText>}
+            </FormControl>
+            <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={saving}
+                sx={{ minWidth: 110 }}
+            >
+                Добавить
+            </Button>
+        </Box>
     );
 }
