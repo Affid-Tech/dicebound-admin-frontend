@@ -216,8 +216,7 @@ export default function AdventureForm({
                             value={form.title ?? ""}
                             onChange={handleInputChange}
                             required
-                            error={!!validation.title}
-                            helperText={validation.title || "Придумайте запоминающееся название для игры"}
+                            helperText={validation.title ?? "Придумайте запоминающееся название для игры"}
                             inputProps={{ maxLength: 70 }}
                         />
                     </Grid>
@@ -243,7 +242,7 @@ export default function AdventureForm({
                     <Grid size={{ xs: 12, sm: 6 }}>
                         <TextField
                             fullWidth
-                            label="Система *"
+                            label="Система"
                             name="gameSystem"
                             value={form.gameSystem ?? ""}
                             onChange={handleInputChange}
@@ -262,8 +261,7 @@ export default function AdventureForm({
                                     {...params}
                                     label="Мастер"
                                     required
-                                    error={!!validation.dungeonMasterId}
-                                    helperText={validation.dungeonMasterId || "Кто будет вести приключение"}
+                                    helperText={validation.dungeonMasterId ?? "Кто будет вести приключение"}
                                 />
                             )}
                             isOptionEqualToValue={(option, value) => option.id === value.id}
@@ -298,7 +296,7 @@ export default function AdventureForm({
                             value={form.startLevel ?? ""}
                             onChange={handleInputChange}
                             inputProps={{ min: 1, max: 20 }}
-                            helperText="1-20 (D&D, по желанию)"
+                            helperText="1-20"
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
@@ -312,7 +310,7 @@ export default function AdventureForm({
                             inputProps={{ min: 1, max: 12 }}
                             required
                             error={!!validation.minPlayers}
-                            helperText={validation.minPlayers || "Минимальное число участников"}
+                            helperText={validation.minPlayers ?? "Минимальное число участников"}
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
@@ -326,7 +324,7 @@ export default function AdventureForm({
                             inputProps={{ min: form.minPlayers ?? 1, max: 16 }}
                             required
                             error={!!validation.maxPlayers}
-                            helperText={validation.maxPlayers || "Максимальное число участников"}
+                            helperText={validation.maxPlayers ?? "Максимальное число участников"}
                         />
                     </Grid>
                     <Grid size={{ xs: 6, sm: 3 }}>
@@ -337,8 +335,8 @@ export default function AdventureForm({
                             type="number"
                             value={form.priceUnits ?? ""}
                             onChange={handleInputChange}
-                            inputProps={{ min: 0 }}
-                            InputProps={{
+                            inputProps={{
+                                min: 0,
                                 endAdornment: <span style={{ opacity: 0.7, marginLeft: 4 }}>🪙</span>,
                             }}
                             helperText="Оставьте пустым, если игра бесплатная"

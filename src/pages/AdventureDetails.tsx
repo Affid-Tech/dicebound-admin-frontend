@@ -15,6 +15,10 @@ import {
     Divider,
     Chip,
     Tooltip,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    IconButton,
 } from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
@@ -22,6 +26,8 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import PeopleIcon from "@mui/icons-material/People";
 import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
+import AddIcon from "@mui/icons-material/Add";
+import CloseIcon from "@mui/icons-material/Close";
 
 const adventureTypeColors: Record<string, "primary" | "secondary" | "success"> = {
     ONESHOT: "primary",
@@ -38,6 +44,10 @@ export default function AdventureDetails() {
     const [error, setError] = useState<string | null>(null);
     const [sessionsTick, setSessionsTick] = useState(0);
     const [signupsTick, setSignupsTick] = useState(0);
+
+    // Modal controls
+    const [openSessionModal, setOpenSessionModal] = useState(false);
+    const [openSignupModal, setOpenSignupModal] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -109,7 +119,7 @@ export default function AdventureDetails() {
                 <Grid size={{ xs: 12 }}>
                     <Typography sx={{ display: "flex", alignItems: "center" }}>
                         <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
-                        <b>Описание:</b><br/>
+                        <b>Описание:</b><br />
                     </Typography>
                     <Typography sx={{ textAlign: "left", whiteSpace: 'pre-line' }}>
                         {adventure.description ?? "-"}
@@ -143,37 +153,91 @@ export default function AdventureDetails() {
             <Divider sx={{ my: 3 }} />
 
             {/* Sessions */}
-            <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                Сессии
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                    Сессии
+                </Typography>
+                <Button
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    size="small"
+                    onClick={() => setOpenSessionModal(true)}
+                >
+                    Добавить сессию
+                </Button>
+            </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Здесь можно добавить или отредактировать игровые сессии для этого приключения.
             </Typography>
             <Box sx={{ mb: 5 }}>
-                <GameSessionForm
-                    adventureId={adventure.id}
-                    onCancel={() => setSessionsTick((t) => t + 1)}
-                    onSaved={() => setSessionsTick((t) => t + 1)}
-                />
                 <GameSessionList adventureId={adventure.id} key={sessionsTick} />
             </Box>
+            <Dialog open={openSessionModal} onClose={() => setOpenSessionModal(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>
+                    Новая сессия
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setOpenSessionModal(false)}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <GameSessionForm
+                        adventureId={adventure.id}
+                        onSaved={() => {
+                            setOpenSessionModal(false);
+                            setSessionsTick(t => t + 1);
+                        }}
+                        onCancel={() => setOpenSessionModal(false)}
+                    />
+                </DialogContent>
+            </Dialog>
 
             <Divider sx={{ my: 3 }} />
 
             {/* Signups */}
-            <Typography variant="h6" sx={{ mt: 2, mb: 1 }}>
-                Заявки на игру
-            </Typography>
+            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                <Typography variant="h6" sx={{ flexGrow: 1 }}>
+                    Заявки на игру
+                </Typography>
+                <Button
+                    startIcon={<AddIcon />}
+                    variant="contained"
+                    size="small"
+                    onClick={() => setOpenSignupModal(true)}
+                >
+                    Добавить заявку
+                </Button>
+            </Box>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                 Добавляйте или управляйте заявками игроков на участие в этом приключении.
             </Typography>
             <Box sx={{ mb: 5 }}>
-                <AdventureSignupForm
-                    adventureId={adventure.id}
-                    onCreated={() => setSignupsTick((t) => t + 1)}
-                />
                 <AdventureSignupList adventureId={adventure.id} key={signupsTick} />
             </Box>
+            <Dialog open={openSignupModal} onClose={() => setOpenSignupModal(false)} maxWidth="sm" fullWidth>
+                <DialogTitle>
+                    Новая заявка
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setOpenSignupModal(false)}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <AdventureSignupForm
+                        adventureId={adventure.id}
+                        onCreated={() => {
+                            setOpenSignupModal(false);
+                            setSignupsTick(t => t + 1);
+                        }}
+                    />
+                </DialogContent>
+            </Dialog>
 
             <Divider sx={{ my: 3 }} />
 
