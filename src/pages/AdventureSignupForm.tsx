@@ -1,32 +1,43 @@
-import React, { useState, useEffect } from "react";
-import { AdventureSignupService } from "../api/AdventureSignupService";
-import { UserService } from "../api/UserService";
-import type { UserDto } from "../types/user";
-import {
-    Box,
-    Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Button,
-    FormHelperText,
-} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
+import {AdventureSignupService} from "../api/AdventureSignupService";
+import {UserService} from "../api/UserService";
+import type {UserDto} from "../types/user";
+import {Box, Button, CircularProgress, FormControl, FormHelperText, InputLabel, MenuItem, Select,} from "@mui/material";
 
 export default function AdventureSignupForm({
                                                 adventureId,
                                                 onCreated,
-                                            }: Readonly<{ adventureId: string; onCreated: () => void }>) {
+                                                autoFocusRef,
+                                            }: Readonly<{
+    adventureId: string;
+    onCreated: () => void;
+    autoFocusRef?: React.RefObject<HTMLInputElement | undefined>;
+}>) {
     const [users, setUsers] = useState<UserDto[]>([]);
     const [userId, setUserId] = useState("");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // For internal autofocus fallback
+    const selectRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         UserService.list()
             .then(setUsers)
             .catch(() => setUsers([]));
     }, []);
+
+    useEffect(() => {
+        // Autofocus for dialog: prefer parent ref, fallback to internal
+        const ref = autoFocusRef?.current ?? selectRef.current;
+        if (ref) ref.focus();
+    }, [autoFocusRef]);
+
+    // Reset form on open
+    useEffect(() => {
+        setUserId("");
+        setError(null);
+    }, [adventureId]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -52,12 +63,9 @@ export default function AdventureSignupForm({
         <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ my: 3, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}
+            sx={{ my: 1, display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
         >
-            <Typography variant="subtitle1" sx={{ mr: 2, minWidth: 170 }}>
-                Добавить запись на игру
-            </Typography>
-            <FormControl required sx={{ minWidth: 220 }}>
+            <FormControl required fullWidth>
                 <InputLabel id="signup-user-label">Игрок</InputLabel>
                 <Select
                     labelId="signup-user-label"
@@ -65,6 +73,7 @@ export default function AdventureSignupForm({
                     label="Игрок"
                     onChange={e => setUserId(e.target.value)}
                     size="small"
+                    inputRef={autoFocusRef ?? selectRef}
                 >
                     <MenuItem value="">
                         <em>Выберите игрока…</em>
@@ -77,15 +86,17 @@ export default function AdventureSignupForm({
                 </Select>
                 {error && <FormHelperText error>{error}</FormHelperText>}
             </FormControl>
-            <Button
-                type="submit"
-                variant="contained"
-                color="primary"
-                disabled={saving}
-                sx={{ minWidth: 110 }}
-            >
-                Добавить
-            </Button>
+            <Box sx={{ display: "flex", gap: 2 }}>
+                <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={saving}
+                    sx={{ minWidth: 110 }}
+                >
+                    {saving ? <CircularProgress size={20} color="inherit" /> : "Добавить"}
+                </Button>
+            </Box>
         </Box>
     );
 }

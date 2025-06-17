@@ -1,27 +1,14 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { AdventureService } from "../api/AdventureService";
-import type { AdventureDto } from "../types/adventure";
+import {useEffect, useRef, useState} from "react";
+import {useNavigate, useParams} from "react-router-dom";
+import {AdventureService} from "../api/AdventureService";
+import type {AdventureDto} from "../types/adventure";
 import GameSessionList from "./GameSessionList";
 import AdventureSignupList from "./AdventureSignupList";
 import GameSessionForm from "./GameSessionForm";
 import AdventureSignupForm from "./AdventureSignupForm";
-import {
-    Box,
-    Typography,
-    Button,
-    Grid,
-    Paper,
-    Divider,
-    Chip,
-    Tooltip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    IconButton,
-} from "@mui/material";
+import {Alert, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Divider, Grid, IconButton, Paper, Snackbar, Tooltip, Typography,} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
-import SignalCellularAltIcon from '@mui/icons-material/SignalCellularAlt';
+import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import PeopleIcon from "@mui/icons-material/People";
 import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
@@ -49,6 +36,17 @@ export default function AdventureDetails() {
     const [openSessionModal, setOpenSessionModal] = useState(false);
     const [openSignupModal, setOpenSignupModal] = useState(false);
 
+    // Feedback
+    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
+        open: false,
+        message: "",
+        severity: "success",
+    });
+
+    // For focus management
+    const sessionFirstFieldRef = useRef<HTMLInputElement>(undefined);
+    const signupFirstFieldRef = useRef<HTMLInputElement>(undefined);
+
     useEffect(() => {
         if (!id) return;
         setLoading(true);
@@ -57,6 +55,30 @@ export default function AdventureDetails() {
             .catch(e => setError(e.message))
             .finally(() => setLoading(false));
     }, [id]);
+
+    // For accessibility: ESC closes dialogs
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if (e.key === "Escape") {
+                setOpenSessionModal(false);
+                setOpenSignupModal(false);
+            }
+        };
+        window.addEventListener("keydown", handler);
+        return () => window.removeEventListener("keydown", handler);
+    }, []);
+
+    // Feedback for actions
+    const handleSessionAdded = () => {
+        setOpenSessionModal(false);
+        setSessionsTick(t => t + 1);
+        setSnackbar({ open: true, message: "Сессия добавлена!", severity: "success" });
+    };
+    const handleSignupAdded = () => {
+        setOpenSignupModal(false);
+        setSignupsTick(t => t + 1);
+        setSnackbar({ open: true, message: "Заявка добавлена!", severity: "success" });
+    };
 
     if (loading)
         return (
@@ -78,7 +100,7 @@ export default function AdventureDetails() {
         );
 
     return (
-        <Paper elevation={3} sx={{ maxWidth: 700, mx: "auto", my: 4, p: { xs: 2, sm: 4 }, borderRadius: 3 }}>
+        <Paper elevation={3} sx={{ maxWidth: 720, mx: "auto", my: 4, p: { xs: 2, sm: 4 }, borderRadius: 3 }}>
             {/* Adventure Info */}
             <Typography variant="h4" sx={{ mb: 1, display: "flex", alignItems: "center" }}>
                 {adventure.title}
@@ -91,12 +113,13 @@ export default function AdventureDetails() {
                     />
                 </Tooltip>
             </Typography>
-
-            <Typography variant="subtitle2" sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}>
+            <Typography
+                variant="subtitle2"
+                sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
+            >
                 <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
                 Информация о приключении
             </Typography>
-
             <Divider sx={{ mb: 2 }} />
 
             <Grid container spacing={2} sx={{ mb: 2 }}>
@@ -153,24 +176,34 @@ export default function AdventureDetails() {
             <Divider sx={{ my: 3 }} />
 
             {/* Sessions */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Сессии
+            <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 2,
+                background: "rgba(245,248,255,0.7)",
+                px: 2,
+                py: 1,
+                borderRadius: 2
+            }}>
+                <Typography variant="h6" sx={{ flexGrow: 1, display: "flex", alignItems: "center", fontSize: "1.15rem" }}>
+                    <SportsEsportsIcon sx={{ mr: 1, fontSize: 22 }} /> Сессии
                 </Typography>
                 <Button
                     startIcon={<AddIcon />}
                     variant="contained"
                     size="small"
+                    color="primary"
                     onClick={() => setOpenSessionModal(true)}
+                    aria-label="Добавить сессию"
                 >
                     Добавить сессию
                 </Button>
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Здесь можно добавить или отредактировать игровые сессии для этого приключения.
-            </Typography>
             <Box sx={{ mb: 5 }}>
-                <GameSessionList adventureId={adventure.id} key={sessionsTick} />
+                <GameSessionList
+                    adventureId={adventure.id}
+                    key={sessionsTick}
+                />
             </Box>
             <Dialog open={openSessionModal} onClose={() => setOpenSessionModal(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>
@@ -186,11 +219,9 @@ export default function AdventureDetails() {
                 <DialogContent>
                     <GameSessionForm
                         adventureId={adventure.id}
-                        onSaved={() => {
-                            setOpenSessionModal(false);
-                            setSessionsTick(t => t + 1);
-                        }}
+                        onSaved={handleSessionAdded}
                         onCancel={() => setOpenSessionModal(false)}
+                        autoFocusRef={sessionFirstFieldRef}
                     />
                 </DialogContent>
             </Dialog>
@@ -198,22 +229,29 @@ export default function AdventureDetails() {
             <Divider sx={{ my: 3 }} />
 
             {/* Signups */}
-            <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                <Typography variant="h6" sx={{ flexGrow: 1 }}>
-                    Заявки на игру
+            <Box sx={{
+                display: "flex",
+                alignItems: "center",
+                mb: 2,
+                background: "rgba(245,248,255,0.7)",
+                px: 2,
+                py: 1,
+                borderRadius: 2
+            }}>
+                <Typography variant="h6" sx={{ flexGrow: 1, display: "flex", alignItems: "center", fontSize: "1.15rem" }}>
+                    <PeopleIcon sx={{ mr: 1, fontSize: 22 }} /> Заявки на игру
                 </Typography>
                 <Button
                     startIcon={<AddIcon />}
                     variant="contained"
                     size="small"
+                    color="primary"
                     onClick={() => setOpenSignupModal(true)}
+                    aria-label="Добавить заявку"
                 >
                     Добавить заявку
                 </Button>
             </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                Добавляйте или управляйте заявками игроков на участие в этом приключении.
-            </Typography>
             <Box sx={{ mb: 5 }}>
                 <AdventureSignupList adventureId={adventure.id} key={signupsTick} />
             </Box>
@@ -231,10 +269,8 @@ export default function AdventureDetails() {
                 <DialogContent>
                     <AdventureSignupForm
                         adventureId={adventure.id}
-                        onCreated={() => {
-                            setOpenSignupModal(false);
-                            setSignupsTick(t => t + 1);
-                        }}
+                        onCreated={handleSignupAdded}
+                        autoFocusRef={signupFirstFieldRef}
                     />
                 </DialogContent>
             </Dialog>
@@ -267,6 +303,17 @@ export default function AdventureDetails() {
                     Назад к списку
                 </Button>
             </Box>
+
+            <Snackbar
+                open={snackbar.open}
+                autoHideDuration={2000}
+                onClose={() => setSnackbar(s => ({ ...s, open: false }))}
+                anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+            >
+                <Alert severity={snackbar.severity} variant="filled" sx={{ width: "100%" }}>
+                    {snackbar.message}
+                </Alert>
+            </Snackbar>
         </Paper>
     );
 }

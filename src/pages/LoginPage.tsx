@@ -1,16 +1,7 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { setBasicAuth } from "../api/fetchWithAuth";
-import {
-    Card,
-    CardContent,
-    Typography,
-    TextField,
-    Button,
-    Alert,
-    Box,
-    Stack
-} from "@mui/material";
+import React, {useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {setBasicAuth} from "../api/fetchWithAuth";
+import {Alert, Box, Button, Card, CardContent, Stack, TextField, Typography} from "@mui/material";
 
 interface LoginPageProps {
     onLogin?: () => void;

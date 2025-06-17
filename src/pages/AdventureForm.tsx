@@ -1,29 +1,25 @@
 import React, {type SyntheticEvent, useEffect, useState} from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { AdventureService } from "../api/AdventureService";
-import { UserService } from "../api/UserService";
-import type {
-    AdventureDto,
-    AdventureCreateDto,
-    AdventurePatchDto,
-    AdventureType,
-} from "../types/adventure";
-import type { UserDto } from "../types/user";
+import {useNavigate, useParams} from "react-router-dom";
+import {AdventureService} from "../api/AdventureService";
+import {UserService} from "../api/UserService";
+import type {AdventureCreateDto, AdventureDto, AdventurePatchDto, AdventureType,} from "../types/adventure";
+import type {UserDto} from "../types/user";
 import {
-    Grid,
+    Alert,
+    Autocomplete,
     Box,
-    Typography,
-    TextField,
-    Select,
-    MenuItem,
     Button,
-    InputLabel,
+    CircularProgress,
     FormControl,
     FormHelperText,
+    Grid,
+    InputLabel,
+    MenuItem,
     Paper,
-    CircularProgress,
-    Alert,
-    Autocomplete, type SelectChangeEvent,
+    Select,
+    type SelectChangeEvent,
+    TextField,
+    Typography,
 } from "@mui/material";
 
 const adventureTypes: { value: AdventureType; label: string }[] = [

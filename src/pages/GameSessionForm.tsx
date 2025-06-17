@@ -1,14 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { GameSessionService } from "../api/GameSessionService";
-import type { GameSessionCreateDto, GameSessionDto, GameSessionPatchDto } from "../types/gameSession";
-import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    FormHelperText,
-    CircularProgress,
-} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
+import {GameSessionService} from "../api/GameSessionService";
+import type {GameSessionCreateDto, GameSessionDto, GameSessionPatchDto} from "../types/gameSession";
+import {Box, Button, CircularProgress, FormHelperText, TextField,} from "@mui/material";
 
 function toOffsetDateTime(localDateTime: string) {
     // localDateTime: "2025-06-09T18:00"
@@ -25,11 +18,13 @@ export default function GameSessionForm({
                                             sessionId,
                                             onSaved,
                                             onCancel,
+                                            autoFocusRef, // optional: forward ref from parent dialog for autofocus
                                         }: Readonly<{
     adventureId: string;
     sessionId?: string;
     onSaved: () => void;
     onCancel?: () => void;
+    autoFocusRef: React.RefObject<HTMLInputElement | undefined>;
 }>) {
     const [form, setForm] = useState<GameSessionCreateDto>({
         adventureId,
@@ -41,6 +36,9 @@ export default function GameSessionForm({
     const [loading, setLoading] = useState(!!sessionId);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    // For autofocus on first field in modal (add/edit)
+    const startTimeRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (sessionId) {
@@ -60,8 +58,23 @@ export default function GameSessionForm({
                 })
                 .catch(e => setError(e.message))
                 .finally(() => setLoading(false));
+        } else {
+            // On open "add" modal: clear the form
+            setForm({
+                adventureId,
+                startTime: "",
+                durationHours: 3,
+                linkFoundry: "",
+                notes: "",
+            });
         }
-    }, [sessionId]);
+    }, [sessionId, adventureId]);
+
+    useEffect(() => {
+        // Autofocus logic: prefer parent's ref, fallback to internal
+        const ref = autoFocusRef?.current ?? startTimeRef.current;
+        if (ref) ref.focus();
+    }, [loading, autoFocusRef]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         setForm(prev => ({
@@ -84,6 +97,14 @@ export default function GameSessionForm({
                 await GameSessionService.patch(sessionId, formToSend as GameSessionPatchDto);
             } else {
                 await GameSessionService.create(formToSend);
+                // Clear the form for a fresh "add" modal
+                setForm({
+                    adventureId,
+                    startTime: "",
+                    durationHours: 3,
+                    linkFoundry: "",
+                    notes: "",
+                });
             }
             onSaved();
         } catch (err: unknown) {
@@ -106,11 +127,8 @@ export default function GameSessionForm({
         <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ my: 3, display: "flex", alignItems: "center", gap: 2, flexWrap: "wrap" }}
+            sx={{ my: 1, display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
         >
-            <Typography variant="subtitle1" sx={{ minWidth: 170 }}>
-                {sessionId ? "Редактировать сессию" : "Создать сессию"}
-            </Typography>
             <TextField
                 name="startTime"
                 type="datetime-local"
@@ -119,19 +137,20 @@ export default function GameSessionForm({
                 required
                 size="small"
                 label="Дата и время"
+                inputRef={autoFocusRef ?? startTimeRef}
+                InputLabelProps={{ shrink: true }}
                 sx={{ minWidth: 210 }}
-                slotProps={{ inputLabel: { shrink: true }}}
             />
             <TextField
                 name="durationHours"
                 type="number"
                 value={form.durationHours}
                 onChange={handleChange}
-                slotProps={{ htmlInput: { min: 1, max: 24}}}
+                inputProps={{ min: 1, max: 24 }}
                 required
                 size="small"
                 label="Длительность (ч)"
-                sx={{ width: 120 }}
+                sx={{ width: 160 }}
             />
             <TextField
                 name="linkFoundry"
@@ -151,16 +170,18 @@ export default function GameSessionForm({
                 label="Заметки"
                 sx={{ minWidth: 120 }}
             />
-            <Button type="submit" variant="contained" color="primary" disabled={saving}>
-                {sessionId ? "Сохранить" : "Добавить"}
-            </Button>
-            {onCancel && (
-                <Button type="button" variant="outlined" color="inherit" onClick={onCancel}>
-                    Отмена
+            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+                <Button type="submit" variant="contained" color="primary" disabled={saving}>
+                    {saving ? <CircularProgress size={20} color="inherit" /> : sessionId ? "Сохранить" : "Добавить"}
                 </Button>
-            )}
+                {onCancel && (
+                    <Button type="button" variant="outlined" color="inherit" onClick={onCancel} disabled={saving}>
+                        Отмена
+                    </Button>
+                )}
+            </Box>
             {error && (
-                <FormHelperText error sx={{ ml: 2 }}>
+                <FormHelperText error sx={{ mt: 1 }}>
                     {error}
                 </FormHelperText>
             )}
