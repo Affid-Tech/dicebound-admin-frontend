@@ -1,32 +1,33 @@
-import {useEffect, useRef, useState} from "react";
-import {AdventureSignupService} from "../api/AdventureSignupService";
-import type {AdventureSignupDto, AdventureSignupStatus} from "../types/adventureSignup";
+import { useEffect, useState, useRef } from "react";
+import { AdventureSignupService } from "../api/AdventureSignupService";
+import type { AdventureSignupDto, AdventureSignupStatus } from "../types/adventureSignup";
 import {
-    Alert,
-    Box,
-    Button,
-    Chip,
-    CircularProgress,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControl,
-    FormHelperText,
-    IconButton,
-    InputLabel,
-    MenuItem,
     Paper,
-    Select,
-    Snackbar,
+    Typography,
     Table,
-    TableBody,
-    TableCell,
     TableHead,
     TableRow,
-    Typography,
+    TableCell,
+    TableBody,
+    Chip,
+    Box,
+    CircularProgress,
+    Alert,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+    Select,
+    MenuItem,
+    FormControl,
+    InputLabel,
+    FormHelperText,
+    Snackbar,
+    IconButton,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import DeleteIcon from "@mui/icons-material/Delete";
 
 const STATUS_OPTIONS: AdventureSignupStatus[] = ["PENDING", "APPROVED", "CANCELED"];
 const statusColors: Record<AdventureSignupStatus, "default" | "success" | "warning" | "error"> = {
@@ -42,9 +43,12 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
 
     // Modal state for editing
     const [editingSignup, setEditingSignup] = useState<AdventureSignupDto | null>(null);
-    const [newStatus, setNewStatus] = useState<AdventureSignupStatus | "">( "");
+    const [newStatus, setNewStatus] = useState<AdventureSignupStatus | "">("");
     const [saving, setSaving] = useState(false);
     const [statusError, setStatusError] = useState<string | null>(null);
+
+    // Delete dialog
+    const [deletingSignup, setDeletingSignup] = useState<AdventureSignupDto | null>(null);
 
     // Feedback
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
@@ -105,6 +109,19 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
         }
     };
 
+    // DELETE logic
+    const handleDelete = async () => {
+        if (!deletingSignup) return;
+        try {
+            await AdventureSignupService.remove(deletingSignup.id);
+            setDeletingSignup(null);
+            fetchSignups();
+            setSnackbar({ open: true, message: "Заявка удалена", severity: "success" });
+        } catch (e: any) {
+            setSnackbar({ open: true, message: e.message || "Ошибка удаления", severity: "error" });
+        }
+    };
+
     return (
         <Paper variant="outlined" sx={{ p: 0, boxShadow: "none", bgcolor: "transparent" }}>
             {loading && (
@@ -122,12 +139,13 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                             <TableCell sx={{ fontWeight: 700 }}>Игрок</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Статус</TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {signups.length === 0 && !loading && (
                             <TableRow>
-                                <TableCell colSpan={3}>
+                                <TableCell colSpan={4}>
                                     <Typography align="center" color="text.secondary" sx={{ py: 3 }}>
                                         Нет заявок.<br /> Нажмите "Добавить заявку", чтобы записать первого игрока!
                                     </Typography>
@@ -143,7 +161,11 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                                     "&:hover": { bgcolor: "action.hover" }
                                 }}
                                 aria-label={`Статус заявки игрока ${s.user.name}`}
-                                onClick={() => openEditModal(s)}
+                                onClick={e => {
+                                    // Prevent row click when clicking delete
+                                    if ((e.target as HTMLElement).closest("button")) return;
+                                    openEditModal(s);
+                                }}
                             >
                                 <TableCell>{s.user.name}</TableCell>
                                 <TableCell>{s.user.email}</TableCell>
@@ -166,6 +188,19 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                                             justifyContent: "center"
                                         }}
                                     />
+                                </TableCell>
+                                <TableCell align="center" sx={{ width: 48 }}>
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        aria-label="Удалить заявку"
+                                        onClick={e => {
+                                            e.stopPropagation();
+                                            setDeletingSignup(s);
+                                        }}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -215,6 +250,34 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                     </Button>
                     <Button onClick={handleSave} variant="contained" color="primary" disabled={saving}>
                         {saving ? <CircularProgress size={20} color="inherit" /> : "Сохранить"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+
+            {/* Delete confirmation dialog */}
+            <Dialog open={!!deletingSignup} onClose={() => setDeletingSignup(null)} maxWidth="xs" fullWidth>
+                <DialogTitle>
+                    Удалить заявку?
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setDeletingSignup(null)}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Игрок: {deletingSignup?.user.name}<br />
+                        Email: {deletingSignup?.user.email}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeletingSignup(null)} variant="outlined" color="inherit">
+                        Отмена
+                    </Button>
+                    <Button onClick={handleDelete} variant="contained" color="error" autoFocus>
+                        Удалить
                     </Button>
                 </DialogActions>
             </Dialog>

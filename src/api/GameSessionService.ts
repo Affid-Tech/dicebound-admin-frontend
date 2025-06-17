@@ -32,8 +32,8 @@ export const GameSessionService = {
         if (!res.ok) throw new Error("Ошибка обновления сессии");
         return res.json();
     },
-    async remove(adventureId: string, sessionId: string): Promise<void> {
-        const res = await fetchWithAuth(`/api/adventures/${adventureId}/sessions/${sessionId}`, {
+    async remove(sessionId: string): Promise<void> {
+        const res = await fetchWithAuth(`/api/sessions/${sessionId}`, {
             method: "DELETE",
         });
         if (!res.ok) throw new Error("Ошибка удаления сессии");

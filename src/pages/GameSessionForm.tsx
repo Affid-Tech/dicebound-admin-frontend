@@ -24,7 +24,7 @@ export default function GameSessionForm({
     sessionId?: string;
     onSaved: () => void;
     onCancel?: () => void;
-    autoFocusRef: React.RefObject<HTMLInputElement | undefined>;
+    autoFocusRef?: React.RefObject<HTMLInputElement | undefined>;
 }>) {
     const [form, setForm] = useState<GameSessionCreateDto>({
         adventureId,

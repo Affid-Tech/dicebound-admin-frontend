@@ -1,24 +1,27 @@
-import {useEffect, useState} from "react";
-import {GameSessionService} from "../api/GameSessionService";
-import type {GameSessionDto} from "../types/gameSession";
+import { useEffect, useState } from "react";
+import { GameSessionService } from "../api/GameSessionService";
+import type { GameSessionDto } from "../types/gameSession";
 import GameSessionForm from "./GameSessionForm";
 import {
-    Alert,
-    Box,
-    CircularProgress,
-    Dialog,
-    DialogContent,
-    DialogTitle,
-    IconButton,
     Paper,
-    Snackbar,
+    Typography,
     Table,
-    TableBody,
-    TableCell,
     TableHead,
     TableRow,
-    Typography,
+    TableCell,
+    TableBody,
+    Box,
+    Alert,
+    CircularProgress,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    IconButton,
+    Snackbar,
+    Button,
+    DialogActions,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 
 export default function GameSessionList({ adventureId }: Readonly<{ adventureId: string }>) {
@@ -26,8 +29,11 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    // New: edit session modal control
+    // Edit session modal control
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+    // Delete dialog
+    const [deletingSession, setDeletingSession] = useState<GameSessionDto | null>(null);
 
     // Feedback
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
@@ -39,7 +45,10 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
     const fetchSessions = () => {
         setLoading(true);
         GameSessionService.listForAdventure(adventureId)
-            .then(setSessions)
+            .then(list =>
+                // Sort descending by startTime (newest first)
+                setSessions([...list].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()))
+            )
             .catch(e => setError(e.message))
             .finally(() => setLoading(false));
     };
@@ -55,6 +64,18 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
         setSnackbar({ open: true, message: "Сессия сохранена!", severity: "success" });
     };
 
+    const handleDelete = async () => {
+        if (!deletingSession) return;
+        try {
+            await GameSessionService.remove(deletingSession.id);
+            setDeletingSession(null);
+            fetchSessions();
+            setSnackbar({ open: true, message: "Сессия удалена", severity: "success" });
+        } catch (e: any) {
+            setSnackbar({ open: true, message: e.message || "Ошибка удаления", severity: "error" });
+        }
+    };
+
     return (
         <Paper variant="outlined" sx={{ p: 0, boxShadow: "none", bgcolor: "transparent" }}>
             {loading && (
@@ -66,7 +87,6 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                 <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
             )}
 
-            {/* Responsive table scroll */}
             <Box sx={{ overflowX: "auto", bgcolor: "background.paper", borderRadius: 2 }}>
                 <Table size="small" aria-label="Список сессий">
                     <TableHead>
@@ -75,12 +95,13 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                             <TableCell sx={{ fontWeight: 700 }}>Длительность (ч)</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Foundry</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Заметки</TableCell>
+                            <TableCell align="center" sx={{ fontWeight: 700 }}></TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
                         {sessions.length === 0 && !loading && (
                             <TableRow>
-                                <TableCell colSpan={4}>
+                                <TableCell colSpan={5}>
                                     <Typography align="center" color="text.secondary" sx={{ py: 3 }}>
                                         Нет сессий. <br /> Нажмите "Добавить сессию", чтобы создать первую!
                                     </Typography>
@@ -96,7 +117,11 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                                     "&:hover": { bgcolor: "action.hover" }
                                 }}
                                 aria-label={`Редактировать сессию ${new Date(s.startTime).toLocaleString()}`}
-                                onClick={() => setEditingSessionId(s.id)}
+                                onClick={e => {
+                                    // Prevent row click when clicking delete
+                                    if ((e.target as HTMLElement).closest("button")) return;
+                                    setEditingSessionId(s.id);
+                                }}
                             >
                                 <TableCell>{new Date(s.startTime).toLocaleString()}</TableCell>
                                 <TableCell>{s.durationHours}</TableCell>
@@ -106,6 +131,16 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                                         : "-"}
                                 </TableCell>
                                 <TableCell>{s.notes ?? "-"}</TableCell>
+                                <TableCell align="center" sx={{ width: 48 }}>
+                                    <IconButton
+                                        size="small"
+                                        color="error"
+                                        aria-label="Удалить сессию"
+                                        onClick={() => setDeletingSession(s)}
+                                    >
+                                        <DeleteIcon />
+                                    </IconButton>
+                                </TableCell>
                             </TableRow>
                         ))}
                     </TableBody>
@@ -139,6 +174,34 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                         />
                     )}
                 </DialogContent>
+            </Dialog>
+
+            {/* Delete confirmation */}
+            <Dialog open={!!deletingSession} onClose={() => setDeletingSession(null)} maxWidth="xs" fullWidth>
+                <DialogTitle>
+                    Удалить сессию?
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setDeletingSession(null)}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    <Typography>
+                        Дата: {deletingSession && new Date(deletingSession.startTime).toLocaleString()}<br />
+                        Заметки: {deletingSession?.notes || "-"}
+                    </Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setDeletingSession(null)} variant="outlined" color="inherit">
+                        Отмена
+                    </Button>
+                    <Button onClick={handleDelete} variant="contained" color="error" autoFocus>
+                        Удалить
+                    </Button>
+                </DialogActions>
             </Dialog>
 
             {/* Snackbar for feedback */}
