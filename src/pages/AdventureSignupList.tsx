@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { AdventureSignupService } from "../api/AdventureSignupService";
 import type { AdventureSignupDto, AdventureSignupStatus } from "../types/adventureSignup";
 import {
@@ -36,11 +36,16 @@ const statusColors: Record<AdventureSignupStatus, "default" | "success" | "warni
     CANCELED: "error",
 };
 
-export default function AdventureSignupList({ adventureId }: Readonly<{ adventureId: string }>) {
-    const [signups, setSignups] = useState<AdventureSignupDto[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
+export default function AdventureSignupList({
+                                                signups,
+                                                loading,
+                                                onAnyChange, // call this prop after delete or edit to update parent
+                                            }: Readonly<{
+    adventureId: string;
+    signups: AdventureSignupDto[];
+    loading?: boolean;
+    onAnyChange?: () => void;
+}>) {
     // Modal state for editing
     const [editingSignup, setEditingSignup] = useState<AdventureSignupDto | null>(null);
     const [newStatus, setNewStatus] = useState<AdventureSignupStatus | "">("");
@@ -56,19 +61,6 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
         message: "",
         severity: "success",
     });
-
-    const fetchSignups = () => {
-        setLoading(true);
-        AdventureSignupService.listForAdventure(adventureId)
-            .then(setSignups)
-            .catch(e => setError(e.message))
-            .finally(() => setLoading(false));
-    };
-
-    useEffect(() => {
-        fetchSignups();
-        // eslint-disable-next-line
-    }, [adventureId]);
 
     // Autofocus for modal
     const selectRef = useRef<HTMLInputElement>(null);
@@ -100,7 +92,7 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
         try {
             await AdventureSignupService.patch(editingSignup.id, { status: newStatus });
             closeEditModal();
-            fetchSignups();
+            if (onAnyChange) onAnyChange();
             setSnackbar({ open: true, message: "Статус обновлён!", severity: "success" });
         } catch (err: unknown) {
             setStatusError(err instanceof Error ? err.message : "Ошибка сохранения");
@@ -115,7 +107,7 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
         try {
             await AdventureSignupService.remove(deletingSignup.id);
             setDeletingSignup(null);
-            fetchSignups();
+            if (onAnyChange) onAnyChange();
             setSnackbar({ open: true, message: "Заявка удалена", severity: "success" });
         } catch (e: any) {
             setSnackbar({ open: true, message: e.message || "Ошибка удаления", severity: "error" });
@@ -128,9 +120,6 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                 <Box sx={{ display: "flex", justifyContent: "center", my: 3 }}>
                     <CircularProgress />
                 </Box>
-            )}
-            {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
             )}
             <Box sx={{ overflowX: "auto", bgcolor: "background.paper", borderRadius: 2 }}>
                 <Table size="small" aria-label="Список заявок">
@@ -190,17 +179,14 @@ export default function AdventureSignupList({ adventureId }: Readonly<{ adventur
                                     />
                                 </TableCell>
                                 <TableCell align="center" sx={{ width: 48 }}>
-                                    <IconButton
-                                        size="small"
+                                    <DeleteIcon
                                         color="error"
                                         aria-label="Удалить заявку"
-                                        onClick={e => {
+                                        onClick={(e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
                                             e.stopPropagation();
                                             setDeletingSignup(s);
                                         }}
-                                    >
-                                        <DeleteIcon />
-                                    </IconButton>
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}

@@ -1,10 +1,11 @@
 import {useEffect, useRef, useState} from "react";
-import {useNavigate, useParams} from "react-router-dom";
+import {useParams} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
+import {AdventureSignupService} from "../api/AdventureSignupService";
 import type {AdventureDto} from "../types/adventure";
+import type {AdventureSignupDto} from "../types/adventureSignup";
 import GameSessionList from "./GameSessionList";
 import AdventureSignupList from "./AdventureSignupList";
-import GameSessionForm from "./GameSessionForm";
 import AdventureSignupForm from "./AdventureSignupForm";
 import {Alert, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Divider, Grid, IconButton, Paper, Snackbar, Tooltip, Typography,} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
@@ -15,6 +16,9 @@ import CurrencyBitcoinIcon from "@mui/icons-material/CurrencyBitcoin";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
+import GameSessionForm from "./GameSessionForm.tsx";
+import {GameSessionService} from "../api/GameSessionService.ts";
+import type {GameSessionDto} from "../types/gameSession.ts";
 
 const adventureTypeColors: Record<string, "primary" | "secondary" | "success"> = {
     ONESHOT: "primary",
@@ -24,28 +28,34 @@ const adventureTypeColors: Record<string, "primary" | "secondary" | "success"> =
 
 export default function AdventureDetails() {
     const { id } = useParams<{ id: string }>();
-    const navigate = useNavigate();
 
     const [adventure, setAdventure] = useState<AdventureDto | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [sessionsTick, setSessionsTick] = useState(0);
-    const [signupsTick, setSignupsTick] = useState(0);
 
-    // Modal controls
+    // SESSIONS STATE (lifted up!)
+    const [sessions, setSessions] = useState<GameSessionDto[]>([]);
+    const [sessionsLoading, setSessionsLoading] = useState(true);
     const [openSessionModal, setOpenSessionModal] = useState(false);
+
+    // Which session to edit (for editing in modal)
+    const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+
+    // Signups logic
+    const [signups, setSignups] = useState<AdventureSignupDto[]>([]);
+    const [signupsLoading, setSignupsLoading] = useState(true);
     const [openSignupModal, setOpenSignupModal] = useState(false);
 
-    // Feedback
+    // Snackbar feedback
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
         open: false,
         message: "",
         severity: "success",
     });
 
-    // For focus management
-    const sessionFirstFieldRef = useRef<HTMLInputElement>(undefined);
-    const signupFirstFieldRef = useRef<HTMLInputElement>(undefined);
+    // Focus for signup modal
+    const signupFirstFieldRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
         if (!id) return;
@@ -55,6 +65,27 @@ export default function AdventureDetails() {
             .catch(e => setError(e.message))
             .finally(() => setLoading(false));
     }, [id]);
+
+    // ---- Fetch sessions ----
+    const fetchSessions = () => {
+        setSessionsLoading(true);
+        if (!id) return;
+        GameSessionService.listForAdventure(id)
+            .then(list =>
+                setSessions([...list].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()))
+            )
+            .finally(() => setSessionsLoading(false));
+    };
+
+
+    // Fetch signups for the adventure
+    const fetchSignups = () => {
+        setSignupsLoading(true);
+        if (!id) return;
+        AdventureSignupService.listForAdventure(id)
+            .then(setSignups)
+            .finally(() => setSignupsLoading(false));
+    };
 
     // For accessibility: ESC closes dialogs
     useEffect(() => {
@@ -68,15 +99,30 @@ export default function AdventureDetails() {
         return () => window.removeEventListener("keydown", handler);
     }, []);
 
-    // Feedback for actions
+    useEffect(() => {
+        fetchSignups();
+    }, [id]);
+
+    useEffect(() => {
+        fetchSessions();
+    }, [id]);
+
+    // ---- Handlers for add/edit/delete ----
     const handleSessionAdded = () => {
         setOpenSessionModal(false);
-        setSessionsTick(t => t + 1);
-        setSnackbar({ open: true, message: "Сессия добавлена!", severity: "success" });
+        setEditingSessionId(null);
+        fetchSessions();
+        setSnackbar({ open: true, message: "Сессия добавлена/изменена!", severity: "success" });
     };
+    const handleSessionDeleted = () => {
+        fetchSessions();
+        setSnackbar({ open: true, message: "Сессия удалена!", severity: "success" });
+    };
+
+    // After a signup is added, refresh and close modal
     const handleSignupAdded = () => {
         setOpenSignupModal(false);
-        setSignupsTick(t => t + 1);
+        fetchSignups();
         setSnackbar({ open: true, message: "Заявка добавлена!", severity: "success" });
     };
 
@@ -174,16 +220,9 @@ export default function AdventureDetails() {
             </Grid>
 
             <Divider sx={{ my: 3 }} />
-
-            {/* Sessions */}
             <Box sx={{
-                display: "flex",
-                alignItems: "center",
-                mb: 2,
-                background: "rgba(245,248,255,0.7)",
-                px: 2,
-                py: 1,
-                borderRadius: 2
+                display: "flex", alignItems: "center", mb: 2,
+                background: "rgba(245,248,255,0.7)", px: 2, py: 1, borderRadius: 2
             }}>
                 <Typography variant="h6" sx={{ flexGrow: 1, display: "flex", alignItems: "center", fontSize: "1.15rem" }}>
                     <SportsEsportsIcon sx={{ mr: 1, fontSize: 22 }} /> Сессии
@@ -201,10 +240,13 @@ export default function AdventureDetails() {
             </Box>
             <Box sx={{ mb: 5 }}>
                 <GameSessionList
-                    adventureId={adventure.id}
-                    key={sessionsTick}
+                    sessions={sessions}
+                    loading={sessionsLoading}
+                    onEdit={sid => setEditingSessionId(sid)}
+                    onDeleted={handleSessionDeleted}
                 />
             </Box>
+            {/* ADD session modal */}
             <Dialog open={openSessionModal} onClose={() => setOpenSessionModal(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>
                     Новая сессия
@@ -221,14 +263,36 @@ export default function AdventureDetails() {
                         adventureId={adventure.id}
                         onSaved={handleSessionAdded}
                         onCancel={() => setOpenSessionModal(false)}
-                        autoFocusRef={sessionFirstFieldRef}
                     />
                 </DialogContent>
             </Dialog>
+            {/* EDIT session modal */}
+            <Dialog open={!!editingSessionId} onClose={() => setEditingSessionId(null)} maxWidth="sm" fullWidth>
+                <DialogTitle>
+                    Редактировать сессию
+                    <IconButton
+                        aria-label="close"
+                        onClick={() => setEditingSessionId(null)}
+                        sx={{ position: "absolute", right: 8, top: 8 }}
+                    >
+                        <CloseIcon />
+                    </IconButton>
+                </DialogTitle>
+                <DialogContent>
+                    {editingSessionId && (
+                        <GameSessionForm
+                            adventureId={adventure.id}
+                            sessionId={editingSessionId}
+                            onSaved={handleSessionAdded}
+                            onCancel={() => setEditingSessionId(null)}
+                        />
+                    )}
+                </DialogContent>
+            </Dialog>
 
+            {/* SIGNUPS */}
             <Divider sx={{ my: 3 }} />
 
-            {/* Signups */}
             <Box sx={{
                 display: "flex",
                 alignItems: "center",
@@ -253,7 +317,12 @@ export default function AdventureDetails() {
                 </Button>
             </Box>
             <Box sx={{ mb: 5 }}>
-                <AdventureSignupList adventureId={adventure.id} key={signupsTick} />
+                <AdventureSignupList
+                    adventureId={adventure.id}
+                    signups={signups}
+                    loading={signupsLoading}
+                    onAnyChange={fetchSignups}
+                />
             </Box>
             <Dialog open={openSignupModal} onClose={() => setOpenSignupModal(false)} maxWidth="sm" fullWidth>
                 <DialogTitle>
@@ -270,39 +339,12 @@ export default function AdventureDetails() {
                     <AdventureSignupForm
                         adventureId={adventure.id}
                         onCreated={handleSignupAdded}
+                        existingSignups={signups}
+                        dungeonMasterId={adventure.dungeonMaster?.id}
                         autoFocusRef={signupFirstFieldRef}
                     />
                 </DialogContent>
             </Dialog>
-
-            <Divider sx={{ my: 3 }} />
-
-            {/* Action buttons */}
-            <Box sx={{ mt: 2, display: "flex", gap: 2 }}>
-                <Button
-                    variant="contained"
-                    color="primary"
-                    onClick={() => navigate(`/adventures/${adventure.id}/edit`)}
-                    sx={{
-                        "&:hover": { backgroundColor: "primary.dark" },
-                        fontWeight: 500,
-                    }}
-                    aria-label="Редактировать приключение"
-                >
-                    Редактировать
-                </Button>
-                <Button
-                    variant="outlined"
-                    onClick={() => navigate("/adventures")}
-                    sx={{
-                        "&:hover": { backgroundColor: "action.hover" },
-                        fontWeight: 500,
-                    }}
-                    aria-label="Назад к списку"
-                >
-                    Назад к списку
-                </Button>
-            </Box>
 
             <Snackbar
                 open={snackbar.open}

@@ -1,75 +1,52 @@
-import { useEffect, useState } from "react";
-import { GameSessionService } from "../api/GameSessionService";
-import type { GameSessionDto } from "../types/gameSession";
-import GameSessionForm from "./GameSessionForm";
+import React, {useState} from "react";
+import {GameSessionService} from "../api/GameSessionService";
+import type {GameSessionDto} from "../types/gameSession";
 import {
-    Paper,
-    Typography,
-    Table,
-    TableHead,
-    TableRow,
-    TableCell,
-    TableBody,
-    Box,
     Alert,
+    Box,
+    Button,
     CircularProgress,
     Dialog,
-    DialogTitle,
-    DialogContent,
-    IconButton,
-    Snackbar,
-    Button,
     DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    Paper,
+    Snackbar,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Typography,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CloseIcon from "@mui/icons-material/Close";
 
-export default function GameSessionList({ adventureId }: Readonly<{ adventureId: string }>) {
-    const [sessions, setSessions] = useState<GameSessionDto[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    // Edit session modal control
-    const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+export default function GameSessionList({
+                                            sessions,
+                                            loading,
+                                            onEdit,
+                                            onDeleted,
+                                        }: Readonly<{
+    sessions: GameSessionDto[];
+    loading?: boolean;
+    onEdit?: (sessionId: string) => void;
+    onDeleted?: () => void;
+}>) {
 
     // Delete dialog
     const [deletingSession, setDeletingSession] = useState<GameSessionDto | null>(null);
-
-    // Feedback
     const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: "success" | "error" }>({
-        open: false,
-        message: "",
-        severity: "success",
+        open: false, message: "", severity: "success"
     });
-
-    const fetchSessions = () => {
-        setLoading(true);
-        GameSessionService.listForAdventure(adventureId)
-            .then(list =>
-                // Sort descending by startTime (newest first)
-                setSessions([...list].sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()))
-            )
-            .catch(e => setError(e.message))
-            .finally(() => setLoading(false));
-    };
-
-    useEffect(() => {
-        fetchSessions();
-        // eslint-disable-next-line
-    }, [adventureId]);
-
-    const handleEditSaved = () => {
-        setEditingSessionId(null);
-        fetchSessions();
-        setSnackbar({ open: true, message: "Сессия сохранена!", severity: "success" });
-    };
 
     const handleDelete = async () => {
         if (!deletingSession) return;
         try {
             await GameSessionService.remove(deletingSession.id);
             setDeletingSession(null);
-            fetchSessions();
+            onDeleted?.(); // trigger parent refresh
             setSnackbar({ open: true, message: "Сессия удалена", severity: "success" });
         } catch (e: any) {
             setSnackbar({ open: true, message: e.message || "Ошибка удаления", severity: "error" });
@@ -83,10 +60,6 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                     <CircularProgress />
                 </Box>
             )}
-            {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>
-            )}
-
             <Box sx={{ overflowX: "auto", bgcolor: "background.paper", borderRadius: 2 }}>
                 <Table size="small" aria-label="Список сессий">
                     <TableHead>
@@ -118,9 +91,8 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                                 }}
                                 aria-label={`Редактировать сессию ${new Date(s.startTime).toLocaleString()}`}
                                 onClick={e => {
-                                    // Prevent row click when clicking delete
                                     if ((e.target as HTMLElement).closest("button")) return;
-                                    setEditingSessionId(s.id);
+                                    onEdit?.(s.id);
                                 }}
                             >
                                 <TableCell>{new Date(s.startTime).toLocaleString()}</TableCell>
@@ -132,14 +104,14 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                                 </TableCell>
                                 <TableCell>{s.notes ?? "-"}</TableCell>
                                 <TableCell align="center" sx={{ width: 48 }}>
-                                    <IconButton
-                                        size="small"
+                                    <DeleteIcon
                                         color="error"
                                         aria-label="Удалить сессию"
-                                        onClick={() => setDeletingSession(s)}
-                                    >
-                                        <DeleteIcon />
-                                    </IconButton>
+                                        onClick={(e: React.MouseEvent<SVGSVGElement, MouseEvent>) => {
+                                            e.stopPropagation();
+                                            setDeletingSession(s);
+                                        }}
+                                    />
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -147,36 +119,7 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                 </Table>
             </Box>
 
-            {/* Edit form in a modal dialog */}
-            <Dialog
-                open={!!editingSessionId}
-                onClose={() => setEditingSessionId(null)}
-                maxWidth="sm"
-                fullWidth
-            >
-                <DialogTitle>
-                    Редактировать сессию
-                    <IconButton
-                        aria-label="close"
-                        onClick={() => setEditingSessionId(null)}
-                        sx={{ position: "absolute", right: 8, top: 8 }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-                <DialogContent>
-                    {editingSessionId && (
-                        <GameSessionForm
-                            adventureId={adventureId}
-                            sessionId={editingSessionId}
-                            onSaved={handleEditSaved}
-                            onCancel={() => setEditingSessionId(null)}
-                        />
-                    )}
-                </DialogContent>
-            </Dialog>
-
-            {/* Delete confirmation */}
+            {/* Delete dialog */}
             <Dialog open={!!deletingSession} onClose={() => setDeletingSession(null)} maxWidth="xs" fullWidth>
                 <DialogTitle>
                     Удалить сессию?
@@ -203,8 +146,7 @@ export default function GameSessionList({ adventureId }: Readonly<{ adventureId:
                     </Button>
                 </DialogActions>
             </Dialog>
-
-            {/* Snackbar for feedback */}
+            {/* Snackbar */}
             <Snackbar
                 open={snackbar.open}
                 autoHideDuration={2000}

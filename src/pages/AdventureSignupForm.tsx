@@ -1,24 +1,37 @@
-import React, {useEffect, useRef, useState} from "react";
-import {AdventureSignupService} from "../api/AdventureSignupService";
-import {UserService} from "../api/UserService";
-import type {UserDto} from "../types/user";
-import {Box, Button, CircularProgress, FormControl, FormHelperText, InputLabel, MenuItem, Select,} from "@mui/material";
+import React, { useEffect, useRef, useState } from "react";
+import { AdventureSignupService } from "../api/AdventureSignupService";
+import { UserService } from "../api/UserService";
+import type { AdventureSignupDto } from "../types/adventureSignup";
+import type { UserDto } from "../types/user";
+import {
+    Box,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
+    Button,
+    FormHelperText,
+    CircularProgress,
+} from "@mui/material";
 
 export default function AdventureSignupForm({
                                                 adventureId,
                                                 onCreated,
+                                                existingSignups,
+                                                dungeonMasterId,
                                                 autoFocusRef,
                                             }: Readonly<{
     adventureId: string;
     onCreated: () => void;
-    autoFocusRef?: React.RefObject<HTMLInputElement | undefined>;
+    existingSignups: AdventureSignupDto[];
+    dungeonMasterId?: string;
+    autoFocusRef?: React.RefObject<HTMLInputElement | null>;
 }>) {
     const [users, setUsers] = useState<UserDto[]>([]);
     const [userId, setUserId] = useState("");
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // For internal autofocus fallback
     const selectRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
@@ -28,16 +41,20 @@ export default function AdventureSignupForm({
     }, []);
 
     useEffect(() => {
-        // Autofocus for dialog: prefer parent ref, fallback to internal
         const ref = autoFocusRef?.current ?? selectRef.current;
         if (ref) ref.focus();
     }, [autoFocusRef]);
 
-    // Reset form on open
     useEffect(() => {
         setUserId("");
         setError(null);
     }, [adventureId]);
+
+    // Filter users: not already signed up, not DM
+    const signupUserIds = new Set(existingSignups.map(su => su.user.id));
+    const filteredUsers = users.filter(
+        u => u.id !== dungeonMasterId && !signupUserIds.has(u.id)
+    );
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -78,7 +95,7 @@ export default function AdventureSignupForm({
                     <MenuItem value="">
                         <em>Выберите игрока…</em>
                     </MenuItem>
-                    {users.map(u => (
+                    {filteredUsers.map(u => (
                         <MenuItem key={u.id} value={u.id}>
                             {u.name} ({u.email})
                         </MenuItem>
