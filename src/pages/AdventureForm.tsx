@@ -1,8 +1,8 @@
-import React, {type SyntheticEvent, useRef, useEffect, useState} from "react";
+import React, {type SyntheticEvent, useEffect, useRef, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
 import {UserService} from "../api/UserService";
-import type {AdventureCreateDto, AdventureDto, AdventurePatchDto, AdventureType,} from "../types/adventure";
+import type {AdventureCreateDto, AdventureDto, AdventurePatchDto, AdventureStatus, AdventureType,} from "../types/adventure";
 import type {UserDto} from "../types/user";
 import {
     Alert,
@@ -21,15 +21,11 @@ import {
     TextField,
     Typography,
 } from "@mui/material";
-
-const adventureTypes: { value: AdventureType; label: string }[] = [
-    { value: "ONESHOT", label: "Oneshot" },
-    { value: "MULTISHOT", label: "Multishot" },
-    { value: "CAMPAIGN", label: "Campaign" },
-];
+import {adventureTypes, adventureStatuses} from "./AdventureLabels.ts";
 
 type Validation = {
     title?: string;
+    status?: string;
     dungeonMasterId?: string;
     minPlayers?: string;
     maxPlayers?: string;
@@ -45,6 +41,7 @@ export default function AdventureForm({
     const [users, setUsers] = useState<UserDto[]>([]);
     const [form, setForm] = useState<AdventureCreateDto | AdventurePatchDto>({
         type: "ONESHOT",
+        status: "PLANNED",
         gameSystem: "",
         title: "",
         dungeonMasterId: "",
@@ -80,6 +77,7 @@ export default function AdventureForm({
                 .then((data: AdventureDto) => {
                         setForm({
                             type: data.type,
+                            status: data.status,
                             gameSystem: data.gameSystem,
                             title: data.title,
                             dungeonMasterId: data.dungeonMaster?.id || "",
@@ -141,6 +139,13 @@ export default function AdventureForm({
         setForm(prev => ({
             ...prev,
             type: event.target.value,
+        }));
+    };
+
+    const handleStatusChange = (event: SelectChangeEvent<AdventureStatus>) => {
+        setForm(prev => ({
+            ...prev,
+            status: event.target.value,
         }));
     };
 
@@ -265,6 +270,25 @@ export default function AdventureForm({
                                 ))}
                             </Select>
                             <FormHelperText>Выберите формат: Oneshot, Multishot или Campaign</FormHelperText>
+                        </FormControl>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 6 }}>
+                        <FormControl fullWidth required>
+                            <InputLabel id="status-label">Статус</InputLabel>
+                            <Select
+                                labelId="status-label"
+                                name="status"
+                                value={form.status ?? "PLANNED"}
+                                onChange={handleStatusChange}
+                                label="Статус"
+                            >
+                                {adventureStatuses.map((t) => (
+                                    <MenuItem key={t.value} value={t.value}>
+                                        {t.label}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                            <FormHelperText>Выберите статус приключения</FormHelperText>
                         </FormControl>
                     </Grid>
                     <Grid size={{ xs: 12, sm: 6 }}>

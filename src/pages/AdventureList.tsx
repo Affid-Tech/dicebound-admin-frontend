@@ -3,6 +3,7 @@ import {useNavigate} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
 import type {AdventureDto} from "../types/adventure";
 import {Alert, Box, Button, CircularProgress, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography,} from "@mui/material";
+import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
 
 export default function AdventureList() {
     const [adventures, setAdventures] = useState<AdventureDto[]>([]);
@@ -43,6 +44,7 @@ export default function AdventureList() {
                     <TableRow>
                         <TableCell>Название</TableCell>
                         <TableCell>Тип</TableCell>
+                        <TableCell>Статус</TableCell>
                         <TableCell>Система</TableCell>
                         <TableCell>Мастер</TableCell>
                         <TableCell>Игроки</TableCell>
@@ -57,7 +59,8 @@ export default function AdventureList() {
                             sx={{ cursor: "pointer" }}
                         >
                             <TableCell>{a.title}</TableCell>
-                            <TableCell>{a.type}</TableCell>
+                            <TableCell>{adventureTypes.find(it => it.value == a.type)?.label}</TableCell>
+                            <TableCell>{adventureStatuses.find(it => it.value == a.status)?.label}</TableCell>
                             <TableCell>{a.gameSystem}</TableCell>
                             <TableCell>{a.dungeonMaster?.name || "-"}</TableCell>
                             <TableCell>{a.minPlayers}–{a.maxPlayers}</TableCell>

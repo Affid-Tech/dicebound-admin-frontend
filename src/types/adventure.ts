@@ -4,9 +4,12 @@ import type { AdventureSignupDto } from "./adventureSignup";
 
 export type AdventureType = "ONESHOT" | "MULTISHOT" | "CAMPAIGN";
 
+export type AdventureStatus = "PLANNED" | "RECRUITING" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED";
+
 export interface AdventureDto {
     id: string;
     type: AdventureType;
+    status: AdventureStatus;
     gameSystem: string;
     title: string;
     coverUrl?: string;
@@ -22,6 +25,7 @@ export interface AdventureDto {
 
 export interface AdventureCreateDto {
     type: AdventureType;
+    status: AdventureStatus;
     gameSystem: string;
     title: string;
     dungeonMasterId: string;
@@ -34,6 +38,7 @@ export interface AdventureCreateDto {
 
 export interface AdventurePatchDto {
     type?: AdventureType;
+    status?: AdventureStatus;
     gameSystem?: string;
     title?: string;
     dungeonMasterId?: string;

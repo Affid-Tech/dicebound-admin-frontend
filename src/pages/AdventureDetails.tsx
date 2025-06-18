@@ -19,11 +19,20 @@ import CloseIcon from "@mui/icons-material/Close";
 import GameSessionForm from "./GameSessionForm.tsx";
 import {GameSessionService} from "../api/GameSessionService.ts";
 import type {GameSessionDto} from "../types/gameSession.ts";
+import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
 
 const adventureTypeColors: Record<string, "primary" | "secondary" | "success"> = {
     ONESHOT: "primary",
     MULTISHOT: "secondary",
     CAMPAIGN: "success",
+};
+
+const adventureStatusColors: Record<string, "primary" | "secondary" | "success" | "info" | "error"> = {
+    PLANNED: "secondary",
+    RECRUITING: "primary",
+    IN_PROGRESS: "info",
+    COMPLETED: "success",
+    CANCELLED: "error"
 };
 
 export default function AdventureDetails() {
@@ -169,8 +178,16 @@ export default function AdventureDetails() {
                 {adventure.title}
                 <Tooltip title="Тип приключения" arrow>
                     <Chip
-                        label={adventure.type}
+                        label={adventureTypes.find(it => it.value == adventure.type)?.label}
                         color={adventureTypeColors[adventure.type] || "default"}
+                        size="small"
+                        sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
+                    />
+                </Tooltip>
+                <Tooltip title="Статус приключения" arrow>
+                    <Chip
+                        label={adventureStatuses.find(it => it.value == adventure.status)?.label}
+                        color={adventureStatusColors[adventure.status] || "default"}
                         size="small"
                         sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
                     />
