@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {useParams} from "react-router-dom";
+import {useParams, useNavigate} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
 import {AdventureSignupService} from "../api/AdventureSignupService";
 import type {AdventureDto} from "../types/adventure";
@@ -7,7 +7,7 @@ import type {AdventureSignupDto} from "../types/adventureSignup";
 import GameSessionList from "./GameSessionList";
 import AdventureSignupList from "./AdventureSignupList";
 import AdventureSignupForm from "./AdventureSignupForm";
-import {Alert, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Divider, Grid, IconButton, Paper, Snackbar, Tooltip, Typography,} from "@mui/material";
+import {Alert, Box, Button, Chip, Dialog, DialogContent, DialogTitle, Divider, Grid, IconButton, Paper, Snackbar, Stack, Tooltip, Typography,} from "@mui/material";
 import PersonIcon from "@mui/icons-material/Person";
 import SignalCellularAltIcon from "@mui/icons-material/SignalCellularAlt";
 import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
@@ -40,6 +40,8 @@ export default function AdventureDetails() {
 
     // Which session to edit (for editing in modal)
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+    const navigate = useNavigate();
 
 
     // Signups logic
@@ -159,13 +161,25 @@ export default function AdventureDetails() {
                     />
                 </Tooltip>
             </Typography>
-            <Typography
-                variant="subtitle2"
-                sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
-            >
-                <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
-                Информация о приключении
-            </Typography>
+            <Stack direction="row" justifyContent={"space-between"} spacing={1} sx={{ mb: 2 }}>
+                <Typography
+                    variant="subtitle2"
+                    sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
+                >
+                    <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
+                    Информация о приключении
+                </Typography>
+                <Button
+                    sx={{ mb: 2 }}
+                    variant="contained"
+                    size="small"
+                    color="primary"
+                    onClick={() => navigate(`/adventures/${adventure.id}/edit`)}
+                >
+                    Редактировать приключение
+                </Button>
+            </Stack>
+
             <Divider sx={{ mb: 2 }} />
 
             <Grid container spacing={2} sx={{ mb: 2 }}>
