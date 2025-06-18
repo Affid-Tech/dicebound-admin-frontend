@@ -30,8 +30,22 @@ export const AdventureService = {
         if (!res.ok) throw new Error("Ошибка обновления приключения");
         return res.json();
     },
+
     async remove(id: string): Promise<void> {
         const res = await fetchWithAuth(`/api/adventures/${id}`, { method: "DELETE" });
         if (!res.ok) throw new Error("Ошибка удаления приключения");
     },
+
+    async uploadCover(adventureId: string, file: File): Promise<string> {
+        const formData = new FormData();
+        formData.append("file", file);
+        const res = await fetchWithAuth(`/api/adventures/${adventureId}/cover`, {
+            method: "POST",
+            body: formData,
+        });
+        if (!res.ok) throw new Error("Ошибка загрузки обложки");
+        // Предположим, что backend возвращает { coverUrl: "..." }
+        const data = await res.json();
+        return data.coverUrl;
+    }
 };

@@ -1,4 +1,4 @@
-import React, {type SyntheticEvent, useEffect, useState} from "react";
+import React, {type SyntheticEvent, useRef, useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
 import {UserService} from "../api/UserService";
@@ -60,6 +60,13 @@ export default function AdventureForm({
     const [validation, setValidation] = useState<Validation>({});
     const [success, setSuccess] = useState(false);
 
+    const [coverFile, setCoverFile] = useState<File | null>(null);
+    const [uploading, setUploading] = useState(false);
+    const [uploadError, setUploadError] = useState<string | null>(null);
+    const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined); // для превью
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+
     useEffect(() => {
         UserService.list()
             .then((all) => setUsers(all.filter((u) => u.roles.includes("DUNGEON_MASTER"))))
@@ -70,18 +77,20 @@ export default function AdventureForm({
         if (isEdit && id) {
             setLoading(true);
             AdventureService.get(id)
-                .then((data: AdventureDto) =>
-                    setForm({
-                        type: data.type,
-                        gameSystem: data.gameSystem,
-                        title: data.title,
-                        dungeonMasterId: data.dungeonMaster?.id || "",
-                        description: data.description ?? "",
-                        startLevel: data.startLevel,
-                        minPlayers: data.minPlayers,
-                        maxPlayers: data.maxPlayers,
-                        priceUnits: data.priceUnits,
-                    })
+                .then((data: AdventureDto) => {
+                        setForm({
+                            type: data.type,
+                            gameSystem: data.gameSystem,
+                            title: data.title,
+                            dungeonMasterId: data.dungeonMaster?.id || "",
+                            description: data.description ?? "",
+                            startLevel: data.startLevel,
+                            minPlayers: data.minPlayers,
+                            maxPlayers: data.maxPlayers,
+                            priceUnits: data.priceUnits,
+                        })
+                        setCoverUrl(data.coverUrl);
+                    }
                 )
                 .catch((e) => setError(e.message))
                 .finally(() => setLoading(false));
@@ -148,10 +157,16 @@ export default function AdventureForm({
         }
 
         try {
+            let advId = id;
             if (isEdit && id) {
                 await AdventureService.patch(id, form as AdventurePatchDto);
             } else {
-                await AdventureService.create(form as AdventureCreateDto);
+                const created = await AdventureService.create(form as AdventureCreateDto);
+                advId = created.id;
+            }
+            // === Загрузи обложку, если выбрана ===
+            if (coverFile && advId) {
+                await uploadCover(advId);
             }
             setSuccess(true);
             setTimeout(() => navigate("/adventures"), 1200);
@@ -161,6 +176,7 @@ export default function AdventureForm({
         } finally {
             setSaving(false);
         }
+
     };
 
     const handleDelete = async () => {
@@ -174,6 +190,22 @@ export default function AdventureForm({
             }
         }
     };
+
+    async function uploadCover(adventureId: string) {
+        if (!coverFile) return;
+        setUploading(true);
+        setUploadError(null);
+        try {
+            const url = await AdventureService.uploadCover(adventureId, coverFile);
+            setCoverUrl(url);
+            setCoverFile(null);
+        } catch (e: any) {
+            setUploadError(e.message || "Ошибка загрузки");
+        } finally {
+            setUploading(false);
+        }
+    }
+
 
     if (loading)
         return (
@@ -339,6 +371,42 @@ export default function AdventureForm({
                         />
                     </Grid>
                 </Grid>
+
+                <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Button
+                            variant="outlined"
+                            component="span"
+                            onClick={() => fileInputRef.current?.click()}
+                            disabled={saving}
+                        >
+                            {coverFile ? "Сменить обложку" : "Загрузить обложку"}
+                        </Button>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            ref={fileInputRef}
+                            onChange={e => {
+                                if (e.target.files && e.target.files[0]) {
+                                    setCoverFile(e.target.files[0]);
+                                    setCoverUrl(URL.createObjectURL(e.target.files[0]));
+                                }
+                            }}
+                        />
+                        {coverFile && <span style={{ color: "#28D8C4" }}>{coverFile.name}</span>}
+                        {coverUrl && (
+                            <img
+                                src={coverUrl}
+                                alt="Обложка"
+                                style={{ maxHeight: 60, borderRadius: 10, marginLeft: 12 }}
+                            />
+                        )}
+                        {uploading && <CircularProgress size={20} sx={{ ml: 2 }} />}
+                        {uploadError && <Alert severity="error">{uploadError}</Alert>}
+                    </Box>
+                </Grid>
+
 
                 {/* Actions */}
                 <Grid container spacing={2} sx={{ mt: 2 }}>

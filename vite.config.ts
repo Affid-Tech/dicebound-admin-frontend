@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     proxy: {
       // Прокси для всех запросов на /api → твой Spring Boot
-      '/api': 'http://localhost:8080', // или порт, где у тебя бекенд
+      '/api': 'http://localhost:8080',
+      '/files': 'http://localhost:8080',
     },
   },
 })

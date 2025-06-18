@@ -9,6 +9,7 @@ export interface AdventureDto {
     type: AdventureType;
     gameSystem: string;
     title: string;
+    coverUrl?: string;
     dungeonMaster: UserDto;
     description?: string;
     startLevel?: number;

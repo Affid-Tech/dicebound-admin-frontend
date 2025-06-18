@@ -149,6 +149,21 @@ export default function AdventureDetails() {
 
     return (
         <Paper elevation={3} sx={{ maxWidth: 720, mx: "auto", my: 4, p: { xs: 2, sm: 4 }, borderRadius: 3 }}>
+            {adventure.coverUrl && (
+                <Box sx={{ textAlign: "center", mb: 3 }}>
+                    <img
+                        src={adventure.coverUrl}
+                        alt="Обложка приключения"
+                        style={{
+                            maxWidth: "100%",
+                            maxHeight: "auto",
+                            borderRadius: 18,
+                            boxShadow: "0 2px 12px #0C081522",
+                            objectFit: "cover"
+                        }}
+                    />
+                </Box>
+            )}
             {/* Adventure Info */}
             <Typography variant="h4" sx={{ mb: 1, display: "flex", alignItems: "center" }}>
                 {adventure.title}
@@ -227,7 +242,7 @@ export default function AdventureDetails() {
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <CurrencyBitcoinIcon sx={{ mr: 1, fontSize: 20, color: "warning.main" }} />
                             <b>Стоимость:</b>&nbsp;
-                            {adventure.priceUnits ? adventure.priceUnits + " 🪙" : "-"}
+                            {adventure.priceUnits ?? 0} <img height="17px" src="https://img.icons8.com/external-filled-line-andi-nur-abdillah/64/external-Gold-Coin-chinese-new-year-(filled-line)-filled-line-andi-nur-abdillah.png" alt="coin" />
                         </Typography>
                     </Tooltip>
                 </Grid>
