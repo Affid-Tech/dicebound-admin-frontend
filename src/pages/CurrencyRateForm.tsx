@@ -98,8 +98,9 @@ export default function CurrencyRateForm() {
                             type="number"
                             value={form.ratio}
                             onChange={handleChange}
-                            slotProps={{
-                                input: { min: 1, step: 1 }
+                            inputProps={{
+                                min: 1,
+                                step: 1,
                             }}
                             required
                             fullWidth
