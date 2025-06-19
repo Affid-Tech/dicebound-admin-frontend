@@ -27,9 +27,6 @@ jobs:
       - name: List dist files
         run: ls -l dist
 
-      - name: Echo the target path
-        run: echo ${{ secrets.APP_PATH }}
-
       - name: Upload dist to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
