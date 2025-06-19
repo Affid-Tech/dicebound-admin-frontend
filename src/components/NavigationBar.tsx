@@ -1,50 +1,59 @@
-import {NavLink} from "react-router-dom";
+import { AppBar, Button, Stack, Toolbar } from "@mui/material";
+import { Link, useLocation } from "react-router-dom";
 import LogoutButton from "./LogoutButton.tsx";
 
 interface NavigationBarProps {
-    handleLogout?: () => void
+    handleLogout?: () => void;
 }
 
-export default function NavigationBar({handleLogout}: Readonly<NavigationBarProps>) {
-    return (
-        <nav style={{
-            background: "#1B1033",
-            color: "#fff",
-            padding: "0",
-            borderBottom: "3px solid #28D8C4",
-            borderRadius: 0,
-            position: "fixed",
-            display: "flex",
-            justifyContent: "space-between",
-            left: 0,
-            top: 0,
-            width: "100vw",
-            height: 64,
-            zIndex: 100,
-            boxShadow: "0 2px 12px 0 #0C081522",
-        }}>
-            <div style={{
-                display: "flex",
-                gap: 24,
-                fontWeight: 600,
-                alignItems: "center",
-                margin: "12px 32px",
-            }}>
-                <NavLink to="/" style={{color: "#28D8C4", textDecoration: "none", fontSize: 22, fontWeight: 700}}>
-                    🏠 Главная
-                </NavLink>
-                <NavLink to="/users" style={{
-                    color: "#fff",
-                    fontWeight: 600,
-                }}>Пользователи</NavLink>
-                <NavLink to="/adventures" style={{color: "#fff"}}>Приключения</NavLink>
-                <NavLink to="/currency-rates" style={{color: "#fff"}}>Курсы валют</NavLink>
-            </div>
+const navLinks = [
+    { to: "/", label: "🏠 Главная", main: true },
+    { to: "/users", label: "Пользователи" },
+    { to: "/adventures", label: "Приключения" },
+    { to: "/currency-rates", label: "Курсы валют" },
+];
 
-            <div style={{
-                margin: "12px 32px",}}>
-                <LogoutButton onLogout={handleLogout}/>
-            </div>
-        </nav>
+export default function NavigationBar({ handleLogout }: Readonly<NavigationBarProps>) {
+    const location = useLocation();
+
+    return (
+        <AppBar
+            position="sticky"
+            elevation={2}
+            sx={{
+                background: "#1B1033",
+                color: "#fff",
+                borderRadius: 0,
+                borderBottom: "3px solid #28D8C4",
+                boxShadow: "0 2px 12px 0 #0C081522",
+            }}
+        >
+            <Toolbar sx={{ py: 1, px: 3, display: "flex", justifyContent: "space-between" }}>
+                <Stack direction="row" spacing={2} alignItems="center">
+                    {navLinks.map(({ to, label, main }) => (
+                        <Button
+                            key={to}
+                            component={Link}
+                            to={to}
+                            color="inherit"
+                            sx={{
+                                fontWeight: main ? 700 : 600,
+                                fontSize: main ? 22 : "inherit",
+                                color: location.pathname === to ? "#28D8C4" : "#fff",
+                                textTransform: "none",
+                                borderBottom: location.pathname === to ? "2px solid #28D8C4" : "none",
+                                px: main ? 0 : 2,
+                                minWidth: main ? "unset" : 40,
+                            }}
+                        >
+                            {label}
+                        </Button>
+                    ))}
+                </Stack>
+                <div>
+                    <LogoutButton onLogout={handleLogout} />
+                </div>
+            </Toolbar>
+        </AppBar>
     );
 }
