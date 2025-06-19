@@ -35,4 +35,4 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           source: dist/*
           target: ${{ secrets.FRONTEND_PATH }}
-          rm: true  # syncs the directory: removes files not in source
+          rm: true
