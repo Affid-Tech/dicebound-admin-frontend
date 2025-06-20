@@ -134,7 +134,7 @@ export default function App() {
                         mt: 8,
                     }}
                 >
-                    Digital Dicebound — {new Date().getFullYear()}
+                    © Digital Dicebound — {new Date().getFullYear()}
                 </Box>
             </Box>
         </BrowserRouter>

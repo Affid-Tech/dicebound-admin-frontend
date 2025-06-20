@@ -1,5 +1,7 @@
-import { AppBar, Button, Stack, Toolbar } from "@mui/material";
+import { AppBar, Button, Stack, Toolbar, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, useTheme, useMediaQuery } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
 import LogoutButton from "./LogoutButton.tsx";
 
 interface NavigationBarProps {
@@ -15,6 +17,9 @@ const navLinks = [
 
 export default function NavigationBar({ handleLogout }: Readonly<NavigationBarProps>) {
     const location = useLocation();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+    const [drawerOpen, setDrawerOpen] = useState(false);
 
     return (
         <AppBar
@@ -29,30 +34,68 @@ export default function NavigationBar({ handleLogout }: Readonly<NavigationBarPr
             }}
         >
             <Toolbar sx={{ py: 1, px: 3, display: "flex", justifyContent: "space-between" }}>
-                <Stack direction="row" spacing={2} alignItems="center">
-                    {navLinks.map(({ to, label, main }) => (
-                        <Button
-                            key={to}
-                            component={Link}
-                            to={to}
+                {isMobile ? (
+                    <>
+                        <IconButton
                             color="inherit"
-                            sx={{
-                                fontWeight: main ? 700 : 600,
-                                fontSize: main ? 22 : "inherit",
-                                color: location.pathname === to ? "#28D8C4" : "#fff",
-                                textTransform: "none",
-                                borderBottom:   "none",
-                                px: 2,
-                                minWidth: main ? "unset" : 40,
-                            }}
+                            onClick={() => setDrawerOpen(true)}
+                            edge="start"
+                            sx={{ mr: 2 }}
                         >
-                            {label}
-                        </Button>
-                    ))}
-                </Stack>
-                <div>
-                    <LogoutButton onLogout={handleLogout} />
-                </div>
+                            <MenuIcon />
+                        </IconButton>
+                        <Drawer
+                            anchor="left"
+                            open={drawerOpen}
+                            onClose={() => setDrawerOpen(false)}
+                        >
+                            <List sx={{ minWidth: 220, pt: 2 }}>
+                                {navLinks.map(({ to, label }) => (
+                                    <ListItem key={to} disablePadding>
+                                        <ListItemButton
+                                            component={Link}
+                                            to={to}
+                                            selected={location.pathname === to}
+                                            onClick={() => setDrawerOpen(false)}
+                                        >
+                                            <ListItemText primary={label} />
+                                        </ListItemButton>
+                                    </ListItem>
+                                ))}
+                                <ListItem>
+                                    <LogoutButton onLogout={handleLogout} />
+                                </ListItem>
+                            </List>
+                        </Drawer>
+                    </>
+                ) : (
+                    <>
+                        <Stack direction="row" spacing={2} alignItems="center">
+                            {navLinks.map(({ to, label, main }) => (
+                                <Button
+                                    key={to}
+                                    component={Link}
+                                    to={to}
+                                    color="inherit"
+                                    sx={{
+                                        fontWeight: main ? 700 : 600,
+                                        fontSize: main ? 22 : "inherit",
+                                        color: location.pathname === to ? "#28D8C4" : "#fff",
+                                        textTransform: "none",
+                                        borderBottom: "none",
+                                        px: 2,
+                                        minWidth: main ? "unset" : 40,
+                                    }}
+                                >
+                                    {label}
+                                </Button>
+                            ))}
+                        </Stack>
+                        <div>
+                            <LogoutButton onLogout={handleLogout} />
+                        </div>
+                    </>
+                )}
             </Toolbar>
         </AppBar>
     );
