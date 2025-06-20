@@ -171,7 +171,7 @@ export default function AdventureDetails() {
                         alt="Обложка приключения"
                         style={{
                             maxWidth: "100%",
-                            maxHeight: "auto",
+                            aspectRatio: "1/1",
                             borderRadius: 18,
                             boxShadow: "0 2px 12px #0C081522",
                             objectFit: "cover"
