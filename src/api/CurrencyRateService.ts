@@ -1,5 +1,5 @@
-import { fetchWithAuth } from "./fetchWithAuth";
-import type { CurrencyRateDto, CurrencyRateCreateDto, CurrencyRatePatchDto } from "../types/currencyRate";
+import {fetchWithAuth} from "./fetchWithAuth";
+import type {CurrencyRateCreateDto, CurrencyRateDto, CurrencyRatePatchDto} from "../types/currencyRate";
 
 export const CurrencyRateService = {
     async list(): Promise<CurrencyRateDto[]> {

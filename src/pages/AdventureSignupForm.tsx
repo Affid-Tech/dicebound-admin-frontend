@@ -1,18 +1,9 @@
-import React, { useEffect, useRef, useState } from "react";
-import { AdventureSignupService } from "../api/AdventureSignupService";
-import { UserService } from "../api/UserService";
-import type { AdventureSignupDto } from "../types/adventureSignup";
-import type { UserDto } from "../types/user";
-import {
-    Box,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Button,
-    FormHelperText,
-    CircularProgress,
-} from "@mui/material";
+import React, {useEffect, useRef, useState} from "react";
+import {AdventureSignupService} from "../api/AdventureSignupService";
+import {UserService} from "../api/UserService";
+import type {AdventureSignupDto} from "../types/adventureSignup";
+import type {UserDto} from "../types/user";
+import {Box, Button, CircularProgress, FormControl, FormHelperText, MenuItem, Select, Typography,} from "@mui/material";
 
 export default function AdventureSignupForm({
                                                 adventureId,
@@ -80,14 +71,18 @@ export default function AdventureSignupForm({
         <Box
             component="form"
             onSubmit={handleSubmit}
-            sx={{ my: 1, display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
+            sx={{
+                my: 1,
+                display: "flex",
+                flexDirection: "column",
+                gap: { xs: 1.5, sm: 2 },
+                width: "100%"
+            }}
         >
-            <FormControl required fullWidth>
-                <InputLabel id="signup-user-label">Игрок</InputLabel>
+            <FormControl required fullWidth variant="outlined">
+                <Typography variant="body1" color="text.primary" sx={{ mb: 1 }}>Игрок</Typography>
                 <Select
-                    labelId="signup-user-label"
                     value={userId}
-                    label="Игрок"
                     onChange={e => setUserId(e.target.value)}
                     size="small"
                     inputRef={autoFocusRef ?? selectRef}
@@ -103,17 +98,19 @@ export default function AdventureSignupForm({
                 </Select>
                 {error && <FormHelperText error>{error}</FormHelperText>}
             </FormControl>
-            <Box sx={{ display: "flex", gap: 2 }}>
+            <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
                 <Button
                     type="submit"
                     variant="contained"
                     color="primary"
                     disabled={saving}
                     sx={{ minWidth: 110 }}
+                    fullWidth // Add this for extra-large button on mobile, optional
                 >
                     {saving ? <CircularProgress size={20} color="inherit" /> : "Добавить"}
                 </Button>
             </Box>
         </Box>
     );
+
 }

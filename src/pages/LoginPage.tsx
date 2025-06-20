@@ -1,7 +1,8 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {setBasicAuth} from "../api/fetchWithAuth";
-import {Alert, Box, Button, Card, CardContent, Stack, TextField, Typography} from "@mui/material";
+import {Alert, Box, Button, Card, CardContent, Stack, TextField, Typography, useMediaQuery} from "@mui/material";
+import {useTheme} from "@mui/material/styles";
 
 interface LoginPageProps {
     onLogin?: () => void;
@@ -12,6 +13,9 @@ export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -39,37 +43,68 @@ export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
         }
     };
 
-    return (
-        <Card sx={{ maxWidth: 360, mx: "auto", mt: 7, p: 2 }}>
-            <CardContent>
-                <Typography variant="h6" component="h2" align="center" gutterBottom>
-                    Вход администратора
-                </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate>
-                    <Stack spacing={2}>
+    const content = (
+        <>
+            <Typography variant="h4" component="h2" align="center" gutterBottom mb={4}>
+                Вход администратора
+            </Typography>
+            <Box component="form" onSubmit={handleSubmit} noValidate>
+                <Stack>
+                    <Stack direction="column" spacing={2} mb={2}>
+                        <Typography variant="body1" align="left" gutterBottom>
+                            Логин
+                        </Typography>
                         <TextField
-                            label="Логин"
                             value={login}
                             onChange={e => setLogin(e.target.value)}
                             fullWidth
                             required
                             autoFocus
                         />
+                    </Stack>
+                    <Stack direction="column" spacing={2} mb={4}>
+                        <Typography variant="body1" align="left" gutterBottom>
+                            Пароль
+                        </Typography>
                         <TextField
-                            label="Пароль"
                             type="password"
                             value={password}
                             onChange={e => setPassword(e.target.value)}
                             fullWidth
                             required
                         />
-                        <Button type="submit" variant="contained" fullWidth>
-                            Войти
-                        </Button>
-                        {error && <Alert severity="error">{error}</Alert>}
                     </Stack>
+
+                    <Button type="submit" variant="contained" fullWidth disabled={!login || !password}>
+                        Войти
+                    </Button>
+                    {error && <Alert severity="error">{error}</Alert>}
+                </Stack>
+            </Box>
+        </>
+    );
+
+    return (
+        <Box
+            sx={{
+                minHeight: "100%",
+                width: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+            }}
+        >
+            {isMobile ? (
+                <Box sx={{ width: "100%", maxWidth: 360, px: 2 }}>
+                    {content}
                 </Box>
-            </CardContent>
-        </Card>
+            ) : (
+                <Card sx={{ maxWidth: 360, width: "100%", p: 2 }}>
+                    <CardContent>
+                        {content}
+                    </CardContent>
+                </Card>
+            )}
+        </Box>
     );
 }

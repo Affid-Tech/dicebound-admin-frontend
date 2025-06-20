@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from "react";
 import {useNavigate, useParams} from "react-router-dom";
-import {Alert, Box, Button, Card, CardContent, CircularProgress, Stack, TextField, Typography} from "@mui/material";
+import {Alert, Box, Button, Card, CardContent, CircularProgress, Stack, TextField, Typography, useMediaQuery,} from "@mui/material";
+import {useTheme} from "@mui/material/styles";
 import {CurrencyRateService} from "../api/CurrencyRateService";
 import type {CurrencyRateCreateDto, CurrencyRatePatchDto} from "../types/currencyRate";
 
@@ -14,6 +15,9 @@ export default function CurrencyRateForm() {
     const [error, setError] = useState<string | null>(null);
 
     const navigate = useNavigate();
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
     useEffect(() => {
         if (isEdit && currency) {
@@ -75,69 +79,87 @@ export default function CurrencyRateForm() {
         );
     }
 
+    const formBlock = (
+        <Box component="form" onSubmit={handleSubmit} noValidate>
+            <Stack spacing={2}>
+                {!isEdit && (
+                    <TextField
+                        label="Валюта"
+                        name="currency"
+                        value={form.currency}
+                        onChange={handleChange}
+                        required
+                        fullWidth
+                    />
+                )}
+                <TextField
+                    label="Курс"
+                    name="ratio"
+                    type="number"
+                    value={form.ratio}
+                    onChange={handleChange}
+                    inputProps={{
+                        min: 1,
+                        step: 1,
+                    }}
+                    required
+                    fullWidth
+                />
+
+                {error && <Alert severity="error">{error}</Alert>}
+
+                <Box display="flex" gap={1} mt={2}>
+                    <Button
+                        variant="contained"
+                        type="submit"
+                        disabled={saving}
+                    >
+                        {isEdit ? "Сохранить" : "Добавить"}
+                    </Button>
+                    <Button
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => navigate("/currency-rates")}
+                        disabled={saving}
+                    >
+                        Назад
+                    </Button>
+                    {isEdit && (
+                        <Button
+                            variant="outlined"
+                            color="error"
+                            onClick={handleDelete}
+                            disabled={saving}
+                            sx={{ marginLeft: "auto" }}
+                        >
+                            Удалить
+                        </Button>
+                    )}
+                </Box>
+            </Stack>
+        </Box>
+    );
+
+    // MOBILE: No Card, just box with padding
+    if (isMobile) {
+        return (
+            <Box sx={{ px: 4, pt: 4, pb: 2 }}>
+                <Typography variant="h6" gutterBottom mb={2}>
+                    {isEdit ? `Редактирование курса: ${currency}` : "Добавить курс"}
+                </Typography>
+                {formBlock}
+            </Box>
+        );
+    }
+
+    // DESKTOP: Card as before
     return (
         <Card sx={{ maxWidth: 480, mx: "auto", mt: 4, p: 2 }}>
             <CardContent>
                 <Typography variant="h6" gutterBottom>
                     {isEdit ? `Редактирование курса: ${currency}` : "Добавить курс"}
                 </Typography>
-                <Box component="form" onSubmit={handleSubmit} noValidate>
-                    <Stack spacing={2}>
-                        {!isEdit && (<TextField
-                            label="Валюта"
-                            name="currency"
-                            value={form.currency}
-                            onChange={handleChange}
-                            required
-                            disabled={isEdit}
-                            fullWidth
-                        />)}
-                        <TextField
-                            label="Курс"
-                            name="ratio"
-                            type="number"
-                            value={form.ratio}
-                            onChange={handleChange}
-                            inputProps={{
-                                min: 1,
-                                step: 1,
-                            }}
-                            required
-                            fullWidth
-                        />
-
-                        {error && <Alert severity="error">{error}</Alert>}
-
-                        <Box display="flex" gap={1} mt={2}>
-                            <Button
-                                variant="contained"
-                                type="submit"
-                                disabled={saving}
-                            >
-                                {isEdit ? "Сохранить" : "Добавить"}
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                onClick={() => navigate("/currency-rates")}
-                                disabled={saving}
-                            >
-                                Назад
-                            </Button>
-                            {isEdit && (
-                                <Button
-                                    variant="outlined"
-                                    color="error"
-                                    onClick={handleDelete}
-                                    disabled={saving}
-                                    sx={{ marginLeft: "auto" }}
-                                >
-                                    Удалить
-                                </Button>
-                            )}
-                        </Box>
-                    </Stack>
-                </Box>
+                {formBlock}
             </CardContent>
         </Card>
     );

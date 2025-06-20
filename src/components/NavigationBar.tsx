@@ -1,7 +1,7 @@
-import { AppBar, Button, Stack, Toolbar, IconButton, Drawer, List, ListItem, ListItemButton, ListItemText, useTheme, useMediaQuery } from "@mui/material";
+import {AppBar, Button, Drawer, IconButton, List, ListItem, ListItemButton, ListItemText, Stack, Toolbar, useMediaQuery, useTheme} from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { Link, useLocation } from "react-router-dom";
-import { useState } from "react";
+import {Link, useLocation} from "react-router-dom";
+import {useState} from "react";
 import LogoutButton from "./LogoutButton.tsx";
 
 interface NavigationBarProps {
@@ -9,13 +9,13 @@ interface NavigationBarProps {
 }
 
 const navLinks = [
-    { to: "/", label: "🏠 Главная", main: true },
-    { to: "/users", label: "Пользователи" },
-    { to: "/adventures", label: "Приключения" },
-    { to: "/currency-rates", label: "Курсы валют" },
+    {to: "/", label: "🏠 Главная", main: true},
+    {to: "/users", label: "Пользователи"},
+    {to: "/adventures", label: "Приключения"},
+    {to: "/currency-rates", label: "Курсы валют"},
 ];
 
-export default function NavigationBar({ handleLogout }: Readonly<NavigationBarProps>) {
+export default function NavigationBar({handleLogout}: Readonly<NavigationBarProps>) {
     const location = useLocation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -33,45 +33,46 @@ export default function NavigationBar({ handleLogout }: Readonly<NavigationBarPr
                 boxShadow: "0 2px 12px 0 #0C081522",
             }}
         >
-            <Toolbar sx={{ py: 1, px: 3, display: "flex", justifyContent: "space-between" }}>
+            <Toolbar sx={{py: 1, px: 3, display: "flex", justifyContent: "space-between"}}>
                 {isMobile ? (
                     <>
                         <IconButton
                             color="inherit"
                             onClick={() => setDrawerOpen(true)}
                             edge="start"
-                            sx={{ mr: 2 }}
+                            sx={{mr: 2}}
                         >
-                            <MenuIcon />
+                            <MenuIcon/>
                         </IconButton>
                         <Drawer
                             anchor="left"
                             open={drawerOpen}
                             onClose={() => setDrawerOpen(false)}
                         >
-                            <List sx={{ minWidth: 220, pt: 2 }}>
-                                {navLinks.map(({ to, label }) => (
-                                    <ListItem key={to} disablePadding>
-                                        <ListItemButton
-                                            component={Link}
-                                            to={to}
-                                            selected={location.pathname === to}
-                                            onClick={() => setDrawerOpen(false)}
-                                        >
-                                            <ListItemText primary={label} />
-                                        </ListItemButton>
-                                    </ListItem>
-                                ))}
-                                <ListItem>
-                                    <LogoutButton onLogout={handleLogout} />
-                                </ListItem>
-                            </List>
+                            <Stack direction="column" justifyContent="space-between" height="100%">
+                                <List sx={{minWidth: 220, pt: 2}}>
+                                    {navLinks.map(({to, label}) => (
+                                        <ListItem key={to} disablePadding>
+                                            <ListItemButton
+                                                component={Link}
+                                                to={to}
+                                                selected={location.pathname === to}
+                                                onClick={() => setDrawerOpen(false)}
+                                            >
+                                                <ListItemText primary={label}/>
+                                            </ListItemButton>
+                                        </ListItem>
+                                    ))}
+                                </List>
+
+                                <LogoutButton onLogout={handleLogout}/>
+                            </Stack>
                         </Drawer>
                     </>
                 ) : (
                     <>
                         <Stack direction="row" spacing={2} alignItems="center">
-                            {navLinks.map(({ to, label, main }) => (
+                            {navLinks.map(({to, label, main}) => (
                                 <Button
                                     key={to}
                                     component={Link}
@@ -92,7 +93,7 @@ export default function NavigationBar({ handleLogout }: Readonly<NavigationBarPr
                             ))}
                         </Stack>
                         <div>
-                            <LogoutButton onLogout={handleLogout} />
+                            <LogoutButton onLogout={handleLogout}/>
                         </div>
                     </>
                 )}

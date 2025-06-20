@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { UserService } from "../api/UserService";
-import type { UserDto, UserRole } from "../types/user";
-import { useNavigate } from "react-router-dom";
+import React, {useEffect, useState} from "react";
+import {UserService} from "../api/UserService";
+import type {UserDto, UserRole} from "../types/user";
+import {useNavigate} from "react-router-dom";
 import {
     Alert,
     Box,
+    Button,
     Card,
     CardContent,
     Checkbox,
@@ -22,9 +23,8 @@ import {
     Tooltip,
     Typography,
     useMediaQuery,
-    Button,
 } from "@mui/material";
-import { useTheme } from "@mui/material/styles";
+import {useTheme} from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import ArrowDropUpIcon from "@mui/icons-material/ArrowDropUp";
 import ArrowDropDownIcon from "@mui/icons-material/ArrowDropDown";

@@ -1,5 +1,5 @@
-import { fetchWithAuth } from "./fetchWithAuth";
-import type { AdventureSignupDto, AdventureSignupCreateDto, AdventureSignupPatchDto } from "../types/adventureSignup";
+import {fetchWithAuth} from "./fetchWithAuth";
+import type {AdventureSignupCreateDto, AdventureSignupDto, AdventureSignupPatchDto} from "../types/adventureSignup";
 
 export const AdventureSignupService = {
     async listForAdventure(adventureId: string): Promise<AdventureSignupDto[]> {

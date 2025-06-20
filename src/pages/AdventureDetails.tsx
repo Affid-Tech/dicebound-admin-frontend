@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from "react";
-import {useParams, useNavigate} from "react-router-dom";
+import {useNavigate, useParams} from "react-router-dom";
 import {AdventureService} from "../api/AdventureService";
 import {AdventureSignupService} from "../api/AdventureSignupService";
 import type {AdventureDto} from "../types/adventure";
@@ -20,6 +20,8 @@ import GameSessionForm from "./GameSessionForm.tsx";
 import {GameSessionService} from "../api/GameSessionService.ts";
 import type {GameSessionDto} from "../types/gameSession.ts";
 import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
+import {useTheme} from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
 
 const adventureTypeColors: Record<string, "primary" | "secondary" | "success"> = {
     ONESHOT: "primary",
@@ -49,6 +51,9 @@ export default function AdventureDetails() {
 
     // Which session to edit (for editing in modal)
     const [editingSessionId, setEditingSessionId] = useState<string | null>(null);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
     const navigate = useNavigate();
 
@@ -156,8 +161,9 @@ export default function AdventureDetails() {
             </Box>
         );
 
-    return (
-        <Paper elevation={3} sx={{ maxWidth: 720, mx: "auto", my: 4, p: { xs: 2, sm: 4 }, borderRadius: 3 }}>
+    // --- BEGIN LAYOUT SWITCH ---
+    const Content = (
+        <>
             {adventure.coverUrl && (
                 <Box sx={{ textAlign: "center", mb: 3 }}>
                     <img
@@ -175,7 +181,7 @@ export default function AdventureDetails() {
             )}
             {/* Adventure Info */}
             <Stack direction="row" justifyContent={"space-between"} spacing={1} sx={{ mb: 2 }}>
-                <Typography variant="h4" sx={{ mb: 1, display: "flex", alignItems: "space-between" }}>
+                <Typography variant="h4" sx={{ mb: 1 }}>
                     {adventure.title}
                 </Typography>
                 <Button
@@ -188,11 +194,9 @@ export default function AdventureDetails() {
                     Редактировать приключение
                 </Button>
             </Stack>
-
             <Divider sx={{ mb: 2 }} />
 
             <Stack direction="row" justifyContent={"space-between"} spacing={1} sx={{ mb: 2 }}>
-
                 <Typography
                     variant="subtitle2"
                     sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
@@ -200,7 +204,6 @@ export default function AdventureDetails() {
                     <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
                     Информация о приключении
                 </Typography>
-
                 <Stack direction="row" spacing={1}>
                     <Tooltip title="Тип приключения" arrow>
                         <Chip
@@ -220,9 +223,7 @@ export default function AdventureDetails() {
                     </Tooltip>
                 </Stack>
             </Stack>
-
             <Divider sx={{ mb: 2 }} />
-
 
             <Grid container spacing={2} sx={{ mb: 2 }}>
                 <Grid size={{ xs: 12 }}>
@@ -250,7 +251,7 @@ export default function AdventureDetails() {
                         {adventure.description ?? "-"}
                     </Typography>
                 </Grid>
-                <Grid size={{ xs: 12}}>
+                <Grid size={{ xs: 12 }}>
                     <Typography sx={{ display: "flex", alignItems: "center" }}>
                         <SignalCellularAltIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
                         <b>Стартовый уровень:</b>&nbsp;{adventure.startLevel ?? "-"}
@@ -260,7 +261,7 @@ export default function AdventureDetails() {
                     <Tooltip title="Количество игроков" arrow>
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <PeopleIcon sx={{ mr: 1, fontSize: 20, color: "success.main" }} />
-                            <b>Игроки:</b>&nbsp;{adventure.minPlayers}–{adventure.maxPlayers}
+                            <b>Игроки:</b>&nbsp;{adventure.minPlayers !== adventure.maxPlayers ? `${adventure.minPlayers}–${adventure.maxPlayers}` : adventure.minPlayers}
                         </Typography>
                     </Tooltip>
                 </Grid>
@@ -278,7 +279,7 @@ export default function AdventureDetails() {
             <Divider sx={{ my: 3 }} />
             <Box sx={{
                 display: "flex", alignItems: "center", mb: 2,
-                background: "rgba(245,248,255,0.7)", px: 2, py: 1, borderRadius: 2
+                ...(!isMobile ? {background:  "rgba(245,248,255,0.7)"} : {}), px: 2, py: 1, borderRadius: 2
             }}>
                 <Typography variant="h6" sx={{ flexGrow: 1, display: "flex", alignItems: "center", fontSize: "1.15rem" }}>
                     <SportsEsportsIcon sx={{ mr: 1, fontSize: 22 }} /> Сессии
@@ -348,12 +349,11 @@ export default function AdventureDetails() {
 
             {/* SIGNUPS */}
             <Divider sx={{ my: 3 }} />
-
             <Box sx={{
                 display: "flex",
                 alignItems: "center",
                 mb: 2,
-                background: "rgba(245,248,255,0.7)",
+                ...(!isMobile ? {background:  "rgba(245,248,255,0.7)"} : {}),
                 px: 2,
                 py: 1,
                 borderRadius: 2
@@ -374,7 +374,6 @@ export default function AdventureDetails() {
             </Box>
             <Box sx={{ mb: 5 }}>
                 <AdventureSignupList
-                    adventureId={adventure.id}
                     signups={signups}
                     loading={signupsLoading}
                     onAnyChange={fetchSignups}
@@ -412,6 +411,21 @@ export default function AdventureDetails() {
                     {snackbar.message}
                 </Alert>
             </Snackbar>
+        </>
+    );
+    // --- END LAYOUT SWITCH ---
+
+    if (isMobile) {
+        return (
+            <Box sx={{ px: 2, pt: 4, pb: 2 }}>
+                {Content}
+            </Box>
+        );
+    }
+
+    return (
+        <Paper elevation={3} sx={{ maxWidth: 720, mx: "auto", my: 4, p: { xs: 2, sm: 4 }, borderRadius: 3 }}>
+            {Content}
         </Paper>
     );
 }

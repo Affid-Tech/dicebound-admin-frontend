@@ -18,10 +18,14 @@ import {
     Paper,
     Select,
     type SelectChangeEvent,
+    Stack,
     TextField,
     Typography,
 } from "@mui/material";
-import {adventureTypes, adventureStatuses} from "./AdventureLabels.ts";
+import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
+import {useTheme} from "@mui/material/styles";
+import useMediaQuery from "@mui/material/useMediaQuery";
+import UploadIcon from "@mui/icons-material/Upload";
 
 type Validation = {
     title?: string;
@@ -62,6 +66,9 @@ export default function AdventureForm({
     const [uploadError, setUploadError] = useState<string | null>(null);
     const [coverUrl, setCoverUrl] = useState<string | undefined>(undefined); // для превью
     const fileInputRef = useRef<HTMLInputElement>(null);
+
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
 
     useEffect(() => {
@@ -205,7 +212,7 @@ export default function AdventureForm({
             setCoverUrl(url);
             setCoverFile(null);
         } catch (e: any) {
-            setUploadError(e.message || "Ошибка загрузки");
+            setUploadError(e.message ?? "Ошибка загрузки");
         } finally {
             setUploading(false);
         }
@@ -219,11 +226,106 @@ export default function AdventureForm({
             </Box>
         );
 
-    return (
-        <Paper elevation={3} sx={{ maxWidth: 650, mx: "auto", mt: 4, p: { xs: 2, sm: 4 } }}>
+    const content = (
+        <>
             <Typography variant="h5" mb={2}>
                 {isEdit ? "Редактировать приключение" : "Создать приключение"}
             </Typography>
+            <Stack direction="column"  mb={2}>
+                <Typography variant="subtitle1" sx={{ mb: 2, mt: 2 }}>
+                   Обложка
+                </Typography>
+                <Box sx={{ textAlign: "center", mb: 3 }}>
+                    <Button
+                        component="span"
+                        disabled={saving}
+                        onClick={() => fileInputRef.current?.click()}
+                        sx={{
+                            position: "relative",
+                            borderRadius: 2,
+                            p: 0,
+                            width: "50%",
+                            aspectRatio: "1/1",
+                            overflow: "hidden",
+                            boxShadow: 3,
+                            "&:hover .cover-img, &:focus-visible .cover-img": {
+                                opacity: 0.5,
+                            },
+                            "&:hover .upload-overlay, &:focus-visible .upload-overlay": {
+                                opacity: 1,
+                            },
+                        }}
+                    >
+                        {coverUrl ? (
+                            <img
+                                src={coverUrl}
+                                alt="Обложка"
+                                className="cover-img"
+                                style={{
+                                    width: "100%",
+                                    height: "100%",
+                                    objectFit: "cover",
+                                    borderRadius: 16,
+                                    transition: "opacity 0.25s"
+                                }}
+                                draggable={false}
+                            />
+                        ) : (
+                            <Box
+                                className="cover-img"
+                                sx={{
+                                    width: "100%",
+                                    height: "100%",
+                                    bgcolor: "#f3f3f5",
+                                    color: "#aaa",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    borderRadius: 2,
+                                    fontSize: 32,
+                                    transition: "opacity 0.25s"
+                                }}
+                            >
+                                <UploadIcon sx={{ fontSize: 64 }} />
+                            </Box>
+                        )}
+
+                        {/* Overlay icon */}
+                        <Box
+                            className="upload-overlay"
+                            sx={{
+                                pointerEvents: "none",
+                                opacity: { xs: 1, sm: 0 }, // always visible on mobile, fade in on hover for desktop
+                                position: "absolute",
+                                inset: 0,
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                                transition: "opacity 0.22s",
+                                fontSize: 56,
+                                bgcolor: { xs: "rgba(27,16,51,0.45)", sm: "rgba(27,16,51,0.50)" },
+                            }}
+                        >
+                            <UploadIcon sx={{ fontSize: 64, color: "#fff", opacity: 0.85 }} />
+                        </Box>
+                        <input
+                            type="file"
+                            accept="image/*"
+                            hidden
+                            ref={fileInputRef}
+                            onChange={e => {
+                                if (e.target.files && e.target.files[0]) {
+                                    setCoverFile(e.target.files[0]);
+                                    setCoverUrl(URL.createObjectURL(e.target.files[0]));
+                                }
+                            }}
+                        />
+                    </Button>
+                    {uploading && <CircularProgress size={22} sx={{ mt: 2 }} />}
+                    {uploadError && <Alert severity="error" sx={{ mt: 2 }}>{uploadError}</Alert>}
+                </Box>
+            </Stack>
             {error && (
                 <Alert severity="error" sx={{ mb: 2 }}>
                     {error}
@@ -237,11 +339,13 @@ export default function AdventureForm({
 
             <form onSubmit={handleSubmit} autoComplete="off">
                 {/* Основная информация */}
-                <Typography variant="subtitle1" sx={{ mb: 1, mt: 2 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2, mt: 2 }}>
                     Основная информация
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid size={{ xs: 12 }}>
+
+
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField
                             fullWidth
                             label="Название"
@@ -253,6 +357,7 @@ export default function AdventureForm({
                             inputProps={{ maxLength: 70 }}
                         />
                     </Grid>
+
                     <Grid size={{ xs: 12, sm: 6 }}>
                         <FormControl fullWidth required>
                             <InputLabel id="type-label">Тип</InputLabel>
@@ -335,11 +440,11 @@ export default function AdventureForm({
                 </Grid>
 
                 {/* Ограничения */}
-                <Typography variant="subtitle1" sx={{ mb: 1, mt: 4 }}>
+                <Typography variant="subtitle1" sx={{ mb: 2, mt: 4 }}>
                     Ограничения и параметры
                 </Typography>
                 <Grid container spacing={2}>
-                    <Grid size={{ xs: 6, sm: 3 }}>
+                    <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                         <TextField
                             fullWidth
                             label="Стартовый уровень"
@@ -351,7 +456,7 @@ export default function AdventureForm({
                             helperText="1-20"
                         />
                     </Grid>
-                    <Grid size={{ xs: 6, sm: 3 }}>
+                    <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                         <TextField
                             fullWidth
                             label="Мин. игроков *"
@@ -365,7 +470,7 @@ export default function AdventureForm({
                             helperText={validation.minPlayers ?? "Минимальное число участников"}
                         />
                     </Grid>
-                    <Grid size={{ xs: 6, sm: 3 }}>
+                    <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                         <TextField
                             fullWidth
                             label="Макс. игроков *"
@@ -379,7 +484,7 @@ export default function AdventureForm({
                             helperText={validation.maxPlayers ?? "Максимальное число участников"}
                         />
                     </Grid>
-                    <Grid size={{ xs: 6, sm: 3 }}>
+                    <Grid size={{ xs: 12, sm: 6, lg: 3 }}>
                         <TextField
                             fullWidth
                             label="Цена (единиц)"
@@ -394,41 +499,6 @@ export default function AdventureForm({
                             helperText="Оставьте пустым, если игра бесплатная"
                         />
                     </Grid>
-                </Grid>
-
-                <Grid size={{ xs: 12 }} sx={{ mt: 3 }}>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <Button
-                            variant="outlined"
-                            component="span"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={saving}
-                        >
-                            {coverFile ? "Сменить обложку" : "Загрузить обложку"}
-                        </Button>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            hidden
-                            ref={fileInputRef}
-                            onChange={e => {
-                                if (e.target.files && e.target.files[0]) {
-                                    setCoverFile(e.target.files[0]);
-                                    setCoverUrl(URL.createObjectURL(e.target.files[0]));
-                                }
-                            }}
-                        />
-                        {coverFile && <span style={{ color: "#28D8C4" }}>{coverFile.name}</span>}
-                        {coverUrl && (
-                            <img
-                                src={coverUrl}
-                                alt="Обложка"
-                                style={{ maxHeight: 60, borderRadius: 10, marginLeft: 12 }}
-                            />
-                        )}
-                        {uploading && <CircularProgress size={20} sx={{ ml: 2 }} />}
-                        {uploadError && <Alert severity="error">{uploadError}</Alert>}
-                    </Box>
                 </Grid>
 
 
@@ -466,6 +536,20 @@ export default function AdventureForm({
                     </Grid>
                 </Grid>
             </form>
+        </>
+    );
+
+    if (isMobile) {
+        return (
+            <Box sx={{ px: 2, pt: 4, pb: 2, maxWidth: 650, mx: "auto" }}>
+                {content}
+            </Box>
+        );
+    }
+
+    return (
+        <Paper elevation={3} sx={{ maxWidth: { md: "70%", lg: "60%", xl: "45%" }, mx: "auto", mt: 4, p: { xs: 2, sm: 4 } }}>
+            {content}
         </Paper>
     );
 }

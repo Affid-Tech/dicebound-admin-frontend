@@ -1,23 +1,10 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { AdventureService } from "../api/AdventureService";
-import type { AdventureDto } from "../types/adventure";
-import {
-    Alert,
-    Box,
-    Button,
-    CircularProgress,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableRow,
-    Typography,
-    useMediaQuery,
-} from "@mui/material";
-import { useTheme } from "@mui/material/styles";
-import { adventureStatuses, adventureTypes } from "./AdventureLabels.ts";
+import {useEffect, useState} from "react";
+import {useNavigate} from "react-router-dom";
+import {AdventureService} from "../api/AdventureService";
+import type {AdventureDto} from "../types/adventure";
+import {Alert, Box, Button, CircularProgress, Paper, Table, TableBody, TableCell, TableHead, TableRow, Typography, useMediaQuery,} from "@mui/material";
+import {useTheme} from "@mui/material/styles";
+import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
 
 export default function AdventureList() {
     const [adventures, setAdventures] = useState<AdventureDto[]>([]);

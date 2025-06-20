@@ -1,5 +1,5 @@
-import { useNavigate } from "react-router-dom";
-import { Box, Card, CardActionArea, CardContent, Container, Grid, Typography } from "@mui/material";
+import {useNavigate} from "react-router-dom";
+import {Box, Card, CardActionArea, CardContent, Container, Grid, Typography} from "@mui/material";
 
 const links = [
     { to: "/users", label: "Пользователи", desc: "Все участники и мастера" },

@@ -1,4 +1,4 @@
-import type { UserDto } from "./user";
+import type {UserDto} from "./user";
 
 export type AdventureSignupStatus = "PENDING" | "APPROVED" | "CANCELED";
 

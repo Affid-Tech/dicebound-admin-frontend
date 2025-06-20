@@ -1,6 +1,6 @@
-import type { UserDto } from "./user";
-import type { GameSessionDto } from "./gameSession.ts";
-import type { AdventureSignupDto } from "./adventureSignup";
+import type {UserDto} from "./user";
+import type {GameSessionDto} from "./gameSession.ts";
+import type {AdventureSignupDto} from "./adventureSignup";
 
 export type AdventureType = "ONESHOT" | "MULTISHOT" | "CAMPAIGN";
 

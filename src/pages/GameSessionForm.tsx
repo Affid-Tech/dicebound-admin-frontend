@@ -135,6 +135,7 @@ export default function GameSessionForm({
                 value={form.startTime ? form.startTime.slice(0, 16) : ""}
                 onChange={handleChange}
                 required
+                fullWidth
                 size="small"
                 label="Дата и время"
                 inputRef={autoFocusRef ?? startTimeRef}
@@ -147,14 +148,15 @@ export default function GameSessionForm({
                 value={form.durationHours}
                 onChange={handleChange}
                 inputProps={{ min: 1, max: 24 }}
+                fullWidth
                 required
                 size="small"
                 label="Длительность (ч)"
-                sx={{ width: 160 }}
             />
             <TextField
                 name="linkFoundry"
                 type="text"
+                fullWidth
                 value={form.linkFoundry}
                 onChange={handleChange}
                 size="small"
@@ -164,13 +166,14 @@ export default function GameSessionForm({
             <TextField
                 name="notes"
                 type="text"
+                fullWidth
                 value={form.notes}
                 onChange={handleChange}
                 size="small"
                 label="Заметки"
                 sx={{ minWidth: 120 }}
             />
-            <Box sx={{ display: "flex", gap: 2, mt: 1 }}>
+            <Box sx={{ display: "flex", gap: 2, mt: 1, justifyContent: "flex-end" }}>
                 <Button type="submit" variant="contained" color="primary" disabled={saving}>
                     {saving ? <CircularProgress size={20} color="inherit" /> : sessionId ? "Сохранить" : "Добавить"}
                 </Button>
