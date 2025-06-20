@@ -72,6 +72,7 @@ export default function Dashboard() {
                                     }}>
                                         <Typography
                                             sx={{
+                                                width: "100%",
                                                 fontWeight: 700,
                                                 textTransform: "uppercase",
                                                 minHeight: 32,
@@ -85,6 +86,7 @@ export default function Dashboard() {
                                         <Typography
                                             variant="body2"
                                             sx={{
+                                                width: "100%",
                                                 color: "#7C8799",
                                                 fontSize: 14,
                                                 mt: 1,
