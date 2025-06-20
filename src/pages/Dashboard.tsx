@@ -77,6 +77,7 @@ export default function Dashboard() {
                                                 minHeight: 32,
                                                 fontSize: 20,
                                                 color: "#272748",
+                                                textAlign: "center"
                                             }}
                                         >
                                             {l.label}
@@ -87,6 +88,7 @@ export default function Dashboard() {
                                                 color: "#7C8799",
                                                 fontSize: 14,
                                                 mt: 1,
+                                                textAlign: "center"
                                             }}
                                         >
                                             {l.desc}
