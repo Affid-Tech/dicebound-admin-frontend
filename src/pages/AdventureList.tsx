@@ -84,7 +84,7 @@ export default function AdventureList() {
                                     <b>Статус:</b> {adventureStatuses.find(it => it.value == a.status)?.label}<br />
                                     <b>Система:</b> {a.gameSystem}<br />
                                     <b>Мастер:</b> {a.dungeonMaster?.name || "-"}<br />
-                                    <b>Игроки:</b> {a.minPlayers}–{a.maxPlayers}
+                                    <b>Игроки:</b> {a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}
                                 </Typography>
                             </Paper>
                         ))}
@@ -125,7 +125,7 @@ export default function AdventureList() {
                                     <TableCell>{adventureStatuses.find(it => it.value == a.status)?.label}</TableCell>
                                     <TableCell>{a.gameSystem}</TableCell>
                                     <TableCell>{a.dungeonMaster?.name || "-"}</TableCell>
-                                    <TableCell>{a.minPlayers}–{a.maxPlayers}</TableCell>
+                                    <TableCell>{a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}</TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
