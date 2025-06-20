@@ -174,32 +174,9 @@ export default function AdventureDetails() {
                 </Box>
             )}
             {/* Adventure Info */}
-            <Typography variant="h4" sx={{ mb: 1, display: "flex", alignItems: "center" }}>
-                {adventure.title}
-                <Tooltip title="Тип приключения" arrow>
-                    <Chip
-                        label={adventureTypes.find(it => it.value == adventure.type)?.label}
-                        color={adventureTypeColors[adventure.type] || "default"}
-                        size="small"
-                        sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
-                    />
-                </Tooltip>
-                <Tooltip title="Статус приключения" arrow>
-                    <Chip
-                        label={adventureStatuses.find(it => it.value == adventure.status)?.label}
-                        color={adventureStatusColors[adventure.status] || "default"}
-                        size="small"
-                        sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
-                    />
-                </Tooltip>
-            </Typography>
             <Stack direction="row" justifyContent={"space-between"} spacing={1} sx={{ mb: 2 }}>
-                <Typography
-                    variant="subtitle2"
-                    sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
-                >
-                    <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
-                    Информация о приключении
+                <Typography variant="h4" sx={{ mb: 1, display: "flex", alignItems: "space-between" }}>
+                    {adventure.title}
                 </Typography>
                 <Button
                     sx={{ mb: 2 }}
@@ -214,8 +191,41 @@ export default function AdventureDetails() {
 
             <Divider sx={{ mb: 2 }} />
 
+            <Stack direction="row" justifyContent={"space-between"} spacing={1} sx={{ mb: 2 }}>
+
+                <Typography
+                    variant="subtitle2"
+                    sx={{ color: "text.secondary", mb: 1, display: "flex", alignItems: "center" }}
+                >
+                    <InfoOutlinedIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
+                    Информация о приключении
+                </Typography>
+
+                <Stack direction="row" spacing={1}>
+                    <Tooltip title="Тип приключения" arrow>
+                        <Chip
+                            label={adventureTypes.find(it => it.value == adventure.type)?.label}
+                            color={adventureTypeColors[adventure.type] || "default"}
+                            size="small"
+                            sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
+                        />
+                    </Tooltip>
+                    <Tooltip title="Статус приключения" arrow>
+                        <Chip
+                            label={adventureStatuses.find(it => it.value == adventure.status)?.label}
+                            color={adventureStatusColors[adventure.status] || "default"}
+                            size="small"
+                            sx={{ ml: 2, fontWeight: 500, letterSpacing: 1, textTransform: "uppercase" }}
+                        />
+                    </Tooltip>
+                </Stack>
+            </Stack>
+
+            <Divider sx={{ mb: 2 }} />
+
+
             <Grid container spacing={2} sx={{ mb: 2 }}>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                     <Tooltip title="Игровая система" arrow>
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <SportsEsportsIcon sx={{ mr: 1, fontSize: 20, color: "primary.main" }} />
@@ -223,7 +233,7 @@ export default function AdventureDetails() {
                         </Typography>
                     </Tooltip>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                     <Tooltip title="Ведущий мастер" arrow>
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <PersonIcon sx={{ mr: 1, fontSize: 20, color: "secondary.main" }} />
@@ -240,13 +250,13 @@ export default function AdventureDetails() {
                         {adventure.description ?? "-"}
                     </Typography>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12}}>
                     <Typography sx={{ display: "flex", alignItems: "center" }}>
                         <SignalCellularAltIcon sx={{ mr: 1, fontSize: 20, color: "info.main" }} />
                         <b>Стартовый уровень:</b>&nbsp;{adventure.startLevel ?? "-"}
                     </Typography>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                     <Tooltip title="Количество игроков" arrow>
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <PeopleIcon sx={{ mr: 1, fontSize: 20, color: "success.main" }} />
@@ -254,7 +264,7 @@ export default function AdventureDetails() {
                         </Typography>
                     </Tooltip>
                 </Grid>
-                <Grid size={{ xs: 12, sm: 6 }}>
+                <Grid size={{ xs: 12 }}>
                     <Tooltip title="Стоимость участия" arrow>
                         <Typography sx={{ display: "flex", alignItems: "center" }}>
                             <CurrencyBitcoinIcon sx={{ mr: 1, fontSize: 20, color: "warning.main" }} />

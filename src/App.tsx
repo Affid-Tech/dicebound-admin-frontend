@@ -12,6 +12,7 @@ import AdventureDetails from "./pages/AdventureDetails.tsx";
 import AdventureForm from "./pages/AdventureForm.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import NavigationBar from "./components/NavigationBar.tsx";
+import {Box} from "@mui/material";
 
 export default function App() {
 
@@ -23,103 +24,119 @@ export default function App() {
 
     return (
         <BrowserRouter>
-            {auth && (
-                <NavigationBar handleLogout={handleLogout}/>
-            )}
-            <Routes>
-                <Route path="/login" element={<LoginPage onLogin={handleLogin}/>}/>
-                <Route
-                    path="/users"
-                    element={
-                        <AuthGuard>
-                            <UserList/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/users/new"
-                    element={
-                        <AuthGuard>
-                            <UserForm/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/users/:id"
-                    element={
-                        <AuthGuard>
-                            <UserForm/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/currency-rates"
-                    element={
-                        <AuthGuard>
-                            <CurrencyRateList/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/currency-rates/new"
-                    element={
-                        <AuthGuard>
-                            <CurrencyRateForm/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/currency-rates/:currency"
-                    element={
-                        <AuthGuard>
-                            <CurrencyRateForm/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/adventures"
-                    element={
-                        <AuthGuard>
-                            <AdventureList/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/adventures/new"
-                    element={
-                        <AuthGuard>
-                            <AdventureForm mode="create"/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/adventures/:id"
-                    element={
-                        <AuthGuard>
-                            <AdventureDetails/>
-                        </AuthGuard>
-                    }
-                />
-                <Route
-                    path="/adventures/:id/edit"
-                    element={
-                        <AuthGuard>
-                            <AdventureForm mode="edit"/>
-                        </AuthGuard>
-                    }
-                />
-                {/* Глобальные страницы списка всех сессий/заявок если нужны: */}
-                {/* <Route path="/sessions" element={<GameSessionListGlobal />} /> */}
-                {/* <Route path="/signups" element={<AdventureSignupListGlobal />} /> */}
-                <Route
-                    path="/"
-                    element={
-                        <AuthGuard>
-                            <Dashboard/>
-                        </AuthGuard>
-                    }
-                />
-            </Routes>
+            <Box sx={{display: "flex", flexDirection: "column", minHeight: "100vh"}}>
+                {auth && (
+                    <NavigationBar handleLogout={handleLogout}/>
+                )}
+                <Box sx={{flex: 1}}>
+                    <Routes>
+                        <Route path="/login" element={<LoginPage onLogin={handleLogin}/>}/>
+                        <Route
+                            path="/users"
+                            element={
+                                <AuthGuard>
+                                    <UserList/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/users/new"
+                            element={
+                                <AuthGuard>
+                                    <UserForm/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/users/:id"
+                            element={
+                                <AuthGuard>
+                                    <UserForm/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/currency-rates"
+                            element={
+                                <AuthGuard>
+                                    <CurrencyRateList/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/currency-rates/new"
+                            element={
+                                <AuthGuard>
+                                    <CurrencyRateForm/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/currency-rates/:currency"
+                            element={
+                                <AuthGuard>
+                                    <CurrencyRateForm/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/adventures"
+                            element={
+                                <AuthGuard>
+                                    <AdventureList/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/adventures/new"
+                            element={
+                                <AuthGuard>
+                                    <AdventureForm mode="create"/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/adventures/:id"
+                            element={
+                                <AuthGuard>
+                                    <AdventureDetails/>
+                                </AuthGuard>
+                            }
+                        />
+                        <Route
+                            path="/adventures/:id/edit"
+                            element={
+                                <AuthGuard>
+                                    <AdventureForm mode="edit"/>
+                                </AuthGuard>
+                            }
+                        />
+                        {/* Глобальные страницы списка всех сессий/заявок если нужны: */}
+                        {/* <Route path="/sessions" element={<GameSessionListGlobal />} /> */}
+                        {/* <Route path="/signups" element={<AdventureSignupListGlobal />} /> */}
+                        <Route
+                            path="/"
+                            element={
+                                <AuthGuard>
+                                    <Dashboard/>
+                                </AuthGuard>
+                            }
+                        />
+                    </Routes>
+                </Box>
+                <Box
+                    component="footer"
+                    sx={{
+                        py: 2,
+                        opacity: 0.5,
+                        fontSize: 13,
+                        textAlign: "center",
+                        mt: 8,
+                    }}
+                >
+                    Digital Dicebound — {new Date().getFullYear()}
+                </Box>
+            </Box>
         </BrowserRouter>
     );
 }

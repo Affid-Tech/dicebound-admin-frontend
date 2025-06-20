@@ -41,8 +41,8 @@ export default function NavigationBar({ handleLogout }: Readonly<NavigationBarPr
                                 fontSize: main ? 22 : "inherit",
                                 color: location.pathname === to ? "#28D8C4" : "#fff",
                                 textTransform: "none",
-                                borderBottom: location.pathname === to ? "2px solid #28D8C4" : "none",
-                                px: main ? 0 : 2,
+                                borderBottom:   "none",
+                                px: 2,
                                 minWidth: main ? "unset" : 40,
                             }}
                         >
