@@ -106,7 +106,7 @@ export default function UserList() {
         setPage(newPage1Based - 1);
     };
 
-    const paginationBlock = !loading && !error && totalPages > 1 && (
+    const paginationBlock = !error && totalPages > 1 && (
         <Box sx={{mt: 3, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
             <Typography variant="body2" color="text.secondary">
                 Страница {page + 1} из {totalPages}
@@ -201,41 +201,43 @@ export default function UserList() {
                 </Alert>
             )}
 
-            <Stack spacing={1.5}>
-                {users.map((u) => (
-                    <Paper
-                        key={u.id}
-                        sx={{
-                            px: 2,
-                            py: 2,
-                            borderRadius: 2,
-                            cursor: "pointer",
-                            boxShadow: 2,
-                            "&:hover": {boxShadow: 6, background: "#F8F9FB"},
-                            transition: "box-shadow 0.18s, background 0.18s",
-                        }}
-                        onClick={() => navigate(`/users/${u.id}`)}
-                    >
-                        <Typography variant="subtitle1" sx={{fontWeight: 700, mb: 0.3}}>
-                            {u.name}
-                        </Typography>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            sx={{wordBreak: "break-all", mb: 0.3}}
+            {!loading && !error && users.length > 0 && (
+                <Stack spacing={1.5}>
+                    {users.map((u) => (
+                        <Paper
+                            key={u.id}
+                            sx={{
+                                px: 2,
+                                py: 2,
+                                borderRadius: 2,
+                                cursor: "pointer",
+                                boxShadow: 2,
+                                "&:hover": {boxShadow: 6, background: "#F8F9FB"},
+                                transition: "box-shadow 0.18s, background 0.18s",
+                            }}
+                            onClick={() => navigate(`/users/${u.id}`)}
                         >
-                            <b>Email:</b>{" "}
-                            {u.email ?? <span style={{color: "#ccc"}}>—</span>}
-                        </Typography>
-                        <Typography variant="body2" color="text.secondary">
-                            <b>Роли:</b>{" "}
-                            {u.roles.length > 0 ? u.roles.join(", ") : (
-                                <span style={{color: "#ccc"}}>—</span>
-                            )}
-                        </Typography>
-                    </Paper>
-                ))}
-            </Stack>
+                            <Typography variant="subtitle1" sx={{fontWeight: 700, mb: 0.3}}>
+                                {u.name}
+                            </Typography>
+                            <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                sx={{wordBreak: "break-all", mb: 0.3}}
+                            >
+                                <b>Email:</b>{" "}
+                                {u.email ?? <span style={{color: "#ccc"}}>—</span>}
+                            </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                <b>Роли:</b>{" "}
+                                {u.roles.length > 0 ? u.roles.join(", ") : (
+                                    <span style={{color: "#ccc"}}>—</span>
+                                )}
+                            </Typography>
+                        </Paper>
+                    ))}
+                </Stack>
+            )}
 
             {paginationBlock}
         </Box>
@@ -279,105 +281,103 @@ export default function UserList() {
                     </Alert>
                 )}
 
-                {users.length > 0 && (
-                    <>
-                        <Table sx={{mt: 2, cursor: "pointer", tableLayout: "fixed"}}>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={{width: "35%"}}>
-                                        <SortableHeader
-                                            label="Имя"
-                                            field="name"
-                                            currentSort={sort}
-                                            onSort={handleSort}
-                                        />
-                                    </TableCell>
-                                    <TableCell sx={{width: "35%"}}>
-                                        <SortableHeader
-                                            label="Email"
-                                            field="email"
-                                            currentSort={sort}
-                                            onSort={handleSort}
-                                        />
-                                    </TableCell>
-                                    <TableCell sx={{width: "30%"}}>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                justifyContent: "space-between",
-                                                width: "100%",
-                                            }}
-                                        >
-                                            <Box sx={{fontWeight: 400}}>Роли</Box>
-                                            <Tooltip title="Фильтр по ролям">
-                                                <FilterListIcon
-                                                    sx={{
-                                                        p: "4px",
-                                                        cursor: "pointer",
-                                                        color: roleFilter ? "primary.main" : "#888",
-                                                        fontSize: 22,
-                                                        "&:hover": {color: "#000"},
-                                                    }}
-                                                    onClick={handleFilterOpen}
-                                                />
-                                            </Tooltip>
-                                            <Menu
-                                                anchorEl={filterAnchor}
-                                                open={Boolean(filterAnchor)}
-                                                onClose={handleFilterClose}
-                                                slotProps={{list: {dense: true}}}
-                                            >
-                                                {ALL_ROLES.map(role => (
-                                                    <MenuItem
-                                                        key={role}
-                                                        value={role}
-                                                        onClick={() => handleRoleSelect(role)}
-                                                        dense
-                                                    >
-                                                        <Checkbox
-                                                            checked={roleFilter === role}
-                                                            size="small"
-                                                            sx={{mr: 1}}
-                                                        />
-                                                        <ListItemText primary={role}/>
-                                                    </MenuItem>
-                                                ))}
-                                                <MenuItem
-                                                    disabled={!roleFilter}
-                                                    onClick={handleClearFilter}
-                                                    sx={{
-                                                        justifyContent: "center",
-                                                        fontSize: 13,
-                                                        opacity: 0.8,
-                                                    }}
-                                                >
-                                                    Сбросить фильтр
-                                                </MenuItem>
-                                            </Menu>
-                                        </Box>
-                                    </TableCell>
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {users.map((u) => (
-                                    <TableRow
-                                        key={u.id}
-                                        hover
-                                        onClick={() => navigate(`/users/${u.id}`)}
-                                        sx={{transition: "background 0.15s", cursor: "pointer"}}
+                {!loading && !error && users.length > 0 && (
+                    <Table sx={{mt: 2, cursor: "pointer", tableLayout: "fixed"}}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{width: "35%"}}>
+                                    <SortableHeader
+                                        label="Имя"
+                                        field="name"
+                                        currentSort={sort}
+                                        onSort={handleSort}
+                                    />
+                                </TableCell>
+                                <TableCell sx={{width: "35%"}}>
+                                    <SortableHeader
+                                        label="Email"
+                                        field="email"
+                                        currentSort={sort}
+                                        onSort={handleSort}
+                                    />
+                                </TableCell>
+                                <TableCell sx={{width: "30%"}}>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
+                                            width: "100%",
+                                        }}
                                     >
-                                        <TableCell>{u.name}</TableCell>
-                                        <TableCell>{u.email}</TableCell>
-                                        <TableCell>{u.roles.join(", ")}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-
-                        {paginationBlock}
-                    </>
+                                        <Box sx={{fontWeight: 400}}>Роли</Box>
+                                        <Tooltip title="Фильтр по ролям">
+                                            <FilterListIcon
+                                                sx={{
+                                                    p: "4px",
+                                                    cursor: "pointer",
+                                                    color: roleFilter ? "primary.main" : "#888",
+                                                    fontSize: 22,
+                                                    "&:hover": {color: "#000"},
+                                                }}
+                                                onClick={handleFilterOpen}
+                                            />
+                                        </Tooltip>
+                                        <Menu
+                                            anchorEl={filterAnchor}
+                                            open={Boolean(filterAnchor)}
+                                            onClose={handleFilterClose}
+                                            slotProps={{list: {dense: true}}}
+                                        >
+                                            {ALL_ROLES.map(role => (
+                                                <MenuItem
+                                                    key={role}
+                                                    value={role}
+                                                    onClick={() => handleRoleSelect(role)}
+                                                    dense
+                                                >
+                                                    <Checkbox
+                                                        checked={roleFilter === role}
+                                                        size="small"
+                                                        sx={{mr: 1}}
+                                                    />
+                                                    <ListItemText primary={role}/>
+                                                </MenuItem>
+                                            ))}
+                                            <MenuItem
+                                                disabled={!roleFilter}
+                                                onClick={handleClearFilter}
+                                                sx={{
+                                                    justifyContent: "center",
+                                                    fontSize: 13,
+                                                    opacity: 0.8,
+                                                }}
+                                            >
+                                                Сбросить фильтр
+                                            </MenuItem>
+                                        </Menu>
+                                    </Box>
+                                </TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {users.map((u) => (
+                                <TableRow
+                                    key={u.id}
+                                    hover
+                                    onClick={() => navigate(`/users/${u.id}`)}
+                                    sx={{transition: "background 0.15s", cursor: "pointer"}}
+                                >
+                                    <TableCell>{u.name}</TableCell>
+                                    <TableCell>{u.email}</TableCell>
+                                    <TableCell>{u.roles.join(", ")}</TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
                 )}
+
+                {paginationBlock}
             </CardContent>
         </Card>
     );

@@ -26,6 +26,10 @@ export const UserService = {
         params.sort?.forEach(s => sp.append("sort", s));
 
         const res = await fetchWithAuth(`/api/users?${sp.toString()}`);
+        if (!res.ok) {
+            throw new Error("Ошибка загрузки пользователей");
+        }
+
         return res.json(); // PageResponse<UserDto>
     },
 

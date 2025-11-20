@@ -37,7 +37,7 @@ export default function AdventureList() {
     const [error, setError] = useState<string | null>(null);
 
     const [page, setPage] = useState(0);        // 0-based для backend
-    const [size] = useState(3);
+    const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
 
     const [statusFilter, setStatusFilter] = useState<AdventureStatus[]>([]);
@@ -271,7 +271,7 @@ export default function AdventureList() {
     );
 
     const paginationBlock = (
-        !loading && !error && totalPages > 1 && (
+        !error && totalPages > 1 && (
             <Box sx={{mt: 3, display: "flex", justifyContent: "space-between", alignItems: "center"}}>
                 <Typography variant="body2" color="text.secondary">
                     Страница {page + 1} из {totalPages}
@@ -294,32 +294,35 @@ export default function AdventureList() {
                 {headerBlock}
                 {filtersBlock}
                 {feedbackBlock}
-                {!loading && !error && adventures.length > 0 && (
-                    <Box>
-                        {adventures.map(a => (
-                            <Paper
-                                key={a.id}
-                                sx={{
-                                    mb: 2, p: 2, borderRadius: 2,
-                                    cursor: "pointer",
-                                    '&:hover': {boxShadow: 6, background: "#F8F9FB"},
-                                }}
-                                onClick={() => navigate(`/adventures/${a.id}`)}
-                                elevation={2}
-                            >
-                                <Typography variant="h6" sx={{mb: 1}}>{a.title}</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    <b>Тип:</b> {adventureTypes.find(it => it.value == a.type)?.label}<br/>
-                                    <b>Статус:</b> {adventureStatuses.find(it => it.value == a.status)?.label}<br/>
-                                    <b>Система:</b> {a.gameSystem}<br/>
-                                    <b>Мастер:</b> {a.dungeonMaster?.name || "-"}<br/>
-                                    <b>Игроки:</b> {a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}
-                                </Typography>
-                            </Paper>
-                        ))}
-                        {paginationBlock}
-                    </Box>
-                )}
+                <Box>
+                    {!loading && !error && adventures.length > 0 && (
+                        <>
+                            {adventures.map(a => (
+                                <Paper
+                                    key={a.id}
+                                    sx={{
+                                        mb: 2, p: 2, borderRadius: 2,
+                                        cursor: "pointer",
+                                        '&:hover': {boxShadow: 6, background: "#F8F9FB"},
+                                    }}
+                                    onClick={() => navigate(`/adventures/${a.id}`)}
+                                    elevation={2}
+                                >
+                                    <Typography variant="h6" sx={{mb: 1}}>{a.title}</Typography>
+                                    <Typography variant="body2" color="text.secondary">
+                                        <b>Тип:</b> {adventureTypes.find(it => it.value == a.type)?.label}<br/>
+                                        <b>Статус:</b> {adventureStatuses.find(it => it.value == a.status)?.label}<br/>
+                                        <b>Система:</b> {a.gameSystem}<br/>
+                                        <b>Мастер:</b> {a.dungeonMaster?.name || "-"}<br/>
+                                        <b>Игроки:</b> {a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}
+                                    </Typography>
+                                </Paper>
+                            ))
+                            }
+                        </>
+                    )}
+                    {paginationBlock}
+                </Box>
             </Box>
         );
     }
@@ -331,55 +334,53 @@ export default function AdventureList() {
             {filtersBlock}
             {feedbackBlock}
             {!loading && !error && adventures.length > 0 && (
-                <>
-                    <Box sx={{width: "100%", overflowX: "auto"}}>
-                        <Table sx={{minWidth: 600, mt: 2, cursor: "pointer", tableLayout: "fixed"}}>
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell sx={{width: "26%"}}>
-                                        <SortableHeader
-                                            label="Название"
-                                            field="title"
-                                            currentSort={sort}
-                                            onSort={handleSort}
-                                        />
-                                    </TableCell>
-                                    <TableCell sx={{width: "12%"}}>Тип</TableCell>
-                                    <TableCell sx={{width: "16%"}}>
-                                        <SortableHeader
-                                            label="Статус"
-                                            field="statusSortOrder"
-                                            currentSort={sort}
-                                            onSort={handleSort}
-                                        />
-                                    </TableCell>
-                                    <TableCell sx={{width: "16%"}}>Система</TableCell>
-                                    <TableCell sx={{width: "18%"}}>Мастер</TableCell>
-                                    <TableCell sx={{width: "12%"}}>Игроки</TableCell>
+                <Box sx={{width: "100%", overflowX: "auto"}}>
+                    <Table sx={{minWidth: 600, mt: 2, cursor: "pointer", tableLayout: "fixed"}}>
+                        <TableHead>
+                            <TableRow>
+                                <TableCell sx={{width: "26%"}}>
+                                    <SortableHeader
+                                        label="Название"
+                                        field="title"
+                                        currentSort={sort}
+                                        onSort={handleSort}
+                                    />
+                                </TableCell>
+                                <TableCell sx={{width: "12%"}}>Тип</TableCell>
+                                <TableCell sx={{width: "16%"}}>
+                                    <SortableHeader
+                                        label="Статус"
+                                        field="statusSortOrder"
+                                        currentSort={sort}
+                                        onSort={handleSort}
+                                    />
+                                </TableCell>
+                                <TableCell sx={{width: "16%"}}>Система</TableCell>
+                                <TableCell sx={{width: "18%"}}>Мастер</TableCell>
+                                <TableCell sx={{width: "12%"}}>Игроки</TableCell>
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {adventures.map(a => (
+                                <TableRow
+                                    key={a.id}
+                                    hover
+                                    onClick={() => navigate(`/adventures/${a.id}`)}
+                                    sx={{cursor: "pointer"}}
+                                >
+                                    <TableCell>{a.title}</TableCell>
+                                    <TableCell>{adventureTypes.find(it => it.value == a.type)?.label}</TableCell>
+                                    <TableCell>{adventureStatuses.find(it => it.value == a.status)?.label}</TableCell>
+                                    <TableCell>{a.gameSystem}</TableCell>
+                                    <TableCell>{a.dungeonMaster?.name || "-"}</TableCell>
+                                    <TableCell>{a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}</TableCell>
                                 </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {adventures.map(a => (
-                                    <TableRow
-                                        key={a.id}
-                                        hover
-                                        onClick={() => navigate(`/adventures/${a.id}`)}
-                                        sx={{cursor: "pointer"}}
-                                    >
-                                        <TableCell>{a.title}</TableCell>
-                                        <TableCell>{adventureTypes.find(it => it.value == a.type)?.label}</TableCell>
-                                        <TableCell>{adventureStatuses.find(it => it.value == a.status)?.label}</TableCell>
-                                        <TableCell>{a.gameSystem}</TableCell>
-                                        <TableCell>{a.dungeonMaster?.name || "-"}</TableCell>
-                                        <TableCell>{a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}</TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    </Box>
-                    {paginationBlock}
-                </>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </Box>
             )}
+            {paginationBlock}
         </Paper>
     );
 }
