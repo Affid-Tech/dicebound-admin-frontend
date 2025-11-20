@@ -72,8 +72,8 @@ export default function AdventureForm({
 
 
     useEffect(() => {
-        UserService.list()
-            .then((all) => setUsers(all.filter((u) => u.roles.includes("DUNGEON_MASTER"))))
+        UserService.listDungeonMasters()
+            .then((all) => setUsers(all))
             .catch(() => setUsers([]));
     }, []);
 

@@ -26,7 +26,7 @@ export default function AdventureSignupForm({
     const selectRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        UserService.list()
+        UserService.listPlayers()
             .then(setUsers)
             .catch(() => setUsers([]));
     }, []);

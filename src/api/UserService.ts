@@ -11,13 +11,8 @@ const roleToApi = (role: UserRole): string => {
 };
 
 export const UserService = {
-    async list(): Promise<UserDto[]> {
-        const res = await fetchWithAuth("/api/users");
-        if (!res.ok) throw new Error("Ошибка загрузки пользователей");
-        return res.json();
-    },
 
-    async listPageable(params: {
+    async list(params: {
         page?: number;
         size?: number;
         role?: string;
@@ -37,6 +32,14 @@ export const UserService = {
         const res = await fetchWithAuth("/api/users?role=DUNGEON_MASTER");
         if (!res.ok) {
             throw new Error("Не удалось загрузить мастеров");
+        }
+        return res.json();
+    },
+
+    async listPlayers(): Promise<UserDto[]> {
+        const res = await fetchWithAuth("/api/users?role=PLAYER");
+        if (!res.ok) {
+            throw new Error("Не удалось загрузить игроков");
         }
         return res.json();
     },

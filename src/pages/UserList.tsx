@@ -61,7 +61,7 @@ export default function UserList() {
         setLoading(true);
         setError(null);
 
-        UserService.listPageable({
+        UserService.list({
             page,
             size,
             role: roleFilter ?? undefined,
