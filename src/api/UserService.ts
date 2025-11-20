@@ -16,6 +16,31 @@ export const UserService = {
         if (!res.ok) throw new Error("Ошибка загрузки пользователей");
         return res.json();
     },
+
+    async listPageable(params: {
+        page?: number;
+        size?: number;
+        role?: string;
+        sort?: string[];
+    }) {
+        const sp = new URLSearchParams();
+        if (params.page !== undefined) sp.set("page", params.page.toString());
+        if (params.size !== undefined) sp.set("size", params.size.toString());
+        if (params.role) sp.set("role", params.role);
+        params.sort?.forEach(s => sp.append("sort", s));
+
+        const res = await fetchWithAuth(`/api/users?${sp.toString()}`);
+        return res.json(); // PageResponse<UserDto>
+    },
+
+    async listDungeonMasters(): Promise<UserDto[]> {
+        const res = await fetchWithAuth("/api/users?role=DUNGEON_MASTER");
+        if (!res.ok) {
+            throw new Error("Не удалось загрузить мастеров");
+        }
+        return res.json();
+    },
+
     async get(id: string): Promise<UserDto> {
         const res = await fetchWithAuth(`/api/users/${id}`);
         if (!res.ok) throw new Error("Пользователь не найден");

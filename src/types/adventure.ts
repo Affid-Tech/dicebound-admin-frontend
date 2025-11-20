@@ -1,6 +1,7 @@
 import type {UserDto} from "./user";
 import type {GameSessionDto} from "./gameSession.ts";
 import type {AdventureSignupDto} from "./adventureSignup";
+import type {PageResponse} from "./commons.ts";
 
 export type AdventureType = "ONESHOT" | "MULTISHOT" | "CAMPAIGN";
 
@@ -48,3 +49,6 @@ export interface AdventurePatchDto {
     maxPlayers?: number;
     priceUnits?: number;
 }
+
+/** Страница приключений */
+export type AdventurePage = PageResponse<AdventureDto>;
