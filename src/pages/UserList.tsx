@@ -33,9 +33,6 @@ import type {PageResponse} from "../types/commons.ts";
 
 const ALL_ROLES: UserRole[] = ["PLAYER", "DUNGEON_MASTER", "ADMIN"] as const;
 
-// поля, по которым реально можем сортировать на бэке
-type SortField = "name" | "email" | "id";
-
 export default function UserList() {
     const [users, setUsers] = useState<UserDto[]>([]);
     const [loading, setLoading] = useState(true);
@@ -80,7 +77,7 @@ export default function UserList() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [page, size, roleFilter, sort]);
 
-    const handleSort = (field: SortField) => {
+    const handleSort = (field: string) => {
         setPage(0);
         setSort(prev => {
             if (!prev) return `${field},asc`;

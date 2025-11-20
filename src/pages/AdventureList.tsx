@@ -79,7 +79,7 @@ export default function AdventureList() {
 
     useEffect(() => {
         UserService.listDungeonMasters()
-            .then(setDungeonMasters)
+            .then((all) => setDungeonMasters(all.content))
             .catch(err => {
                 console.error("Не удалось загрузить мастеров", err);
             });
