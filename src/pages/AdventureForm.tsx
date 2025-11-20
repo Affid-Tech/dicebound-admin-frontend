@@ -73,7 +73,7 @@ export default function AdventureForm({
 
     useEffect(() => {
         UserService.listDungeonMasters()
-            .then((all) => setUsers(all))
+            .then((all) => setUsers(all.content))
             .catch(() => setUsers([]));
     }, []);
 
@@ -315,7 +315,7 @@ export default function AdventureForm({
                             hidden
                             ref={fileInputRef}
                             onChange={e => {
-                                if (e.target.files && e.target.files[0]) {
+                                if (e.target.files?.[0]) {
                                     setCoverFile(e.target.files[0]);
                                     setCoverUrl(URL.createObjectURL(e.target.files[0]));
                                 }

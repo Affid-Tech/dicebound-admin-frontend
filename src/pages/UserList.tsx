@@ -47,7 +47,7 @@ export default function UserList() {
 
     // пагинация
     const [page, setPage] = useState(0);        // 0-based для бэка
-    const [size] = useState(5);
+    const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
 
     // сортировка (на бэке)
