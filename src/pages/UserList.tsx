@@ -89,7 +89,7 @@ export default function UserList() {
         });
     };
 
-    const handleFilterOpen = (e: React.MouseEvent<HTMLElement>) => {
+    const handleFilterOpen = (e: React.MouseEvent<SVGSVGElement>) => {
         setFilterAnchor(e.currentTarget);
     };
 
