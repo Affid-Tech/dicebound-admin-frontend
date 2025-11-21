@@ -104,6 +104,7 @@ export default function UserList() {
     const handleClearFilter = () => {
         setPage(0);
         setRoleFilter(null);
+        setFilterAnchor(null);
     };
 
     const handleChangePage = (_: React.ChangeEvent<unknown>, newPage1Based: number) => {
