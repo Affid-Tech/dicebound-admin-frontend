@@ -89,12 +89,16 @@ export default function UserList() {
         });
     };
 
-    const handleFilterOpen = (e: React.MouseEvent<SVGSVGElement>) => setFilterAnchor(e.currentTarget);
+    const handleFilterOpen = (e: React.MouseEvent<HTMLElement>) => {
+        setFilterAnchor(e.currentTarget);
+    };
+
     const handleFilterClose = () => setFilterAnchor(null);
 
     const handleRoleSelect = (role: UserRole) => {
         setPage(0);
         setRoleFilter(prev => (prev === role ? null : role));
+        setFilterAnchor(null); // сразу закрываем меню после выбора
     };
 
     const handleClearFilter = () => {
@@ -157,7 +161,9 @@ export default function UserList() {
                     anchorEl={filterAnchor}
                     open={Boolean(filterAnchor)}
                     onClose={handleFilterClose}
-                    slotProps={{list: {dense: true}}}
+                    slotProps={{ list: { dense: true } }}
+                    anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                    transformOrigin={{ vertical: "top", horizontal: "right" }}
                 >
                     {ALL_ROLES.map(role => (
                         <MenuItem
@@ -327,7 +333,9 @@ export default function UserList() {
                                             anchorEl={filterAnchor}
                                             open={Boolean(filterAnchor)}
                                             onClose={handleFilterClose}
-                                            slotProps={{list: {dense: true}}}
+                                            slotProps={{ list: { dense: true } }}
+                                            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                            transformOrigin={{ vertical: "top", horizontal: "right" }}
                                         >
                                             {ALL_ROLES.map(role => (
                                                 <MenuItem
