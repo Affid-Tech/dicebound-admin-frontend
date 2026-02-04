@@ -1,6 +1,6 @@
-import {BrowserRouter, Route, Routes} from "react-router-dom";
+import {BrowserRouter, Route, Routes, useLocation} from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
-import UserList from "./pages/UserList"; // и другие страницы
+import UserList from "./pages/UserList";
 import AuthGuard from "./components/AuthGuard";
 import UserForm from "./pages/UserForm.tsx";
 import "./App.css";
@@ -12,24 +12,24 @@ import AdventureDetails from "./pages/AdventureDetails.tsx";
 import AdventureForm from "./pages/AdventureForm.tsx";
 import Dashboard from "./pages/Dashboard.tsx";
 import NavigationBar from "./components/NavigationBar.tsx";
+import PageTransition from "./components/PageTransition.tsx";
 import {Box} from "@mui/material";
 
-export default function App() {
-
-    const [auth, setAuth] = useState(!!localStorage.getItem("basicAuth"));
-
-    // Используй setAuth после login/logout:
-    const handleLogin = () => setAuth(true);
-    const handleLogout = () => setAuth(false);
+function AppRoutes({ auth, handleLogin, handleLogout }: {
+    auth: boolean;
+    handleLogin: () => void;
+    handleLogout: () => void;
+}) {
+    const location = useLocation();
 
     return (
-        <BrowserRouter>
-            <Box sx={{display: "flex", flexDirection: "column", minHeight: "100vh"}}>
-                {auth && (
-                    <NavigationBar handleLogout={handleLogout}/>
-                )}
-                <Box sx={{flex: 1}}>
-                    <Routes>
+        <Box sx={{display: "flex", flexDirection: "column", minHeight: "100vh"}}>
+            {auth && (
+                <NavigationBar handleLogout={handleLogout}/>
+            )}
+            <Box sx={{flex: 1}}>
+                <PageTransition key={location.pathname}>
+                    <Routes location={location}>
                         <Route path="/login" element={<LoginPage onLogin={handleLogin}/>}/>
                         <Route
                             path="/users"
@@ -111,9 +111,6 @@ export default function App() {
                                 </AuthGuard>
                             }
                         />
-                        {/* Глобальные страницы списка всех сессий/заявок если нужны: */}
-                        {/* <Route path="/sessions" element={<GameSessionListGlobal />} /> */}
-                        {/* <Route path="/signups" element={<AdventureSignupListGlobal />} /> */}
                         <Route
                             path="/"
                             element={
@@ -123,20 +120,33 @@ export default function App() {
                             }
                         />
                     </Routes>
-                </Box>
-                <Box
-                    component="footer"
-                    sx={{
-                        py: 2,
-                        opacity: 0.5,
-                        fontSize: 13,
-                        textAlign: "center",
-                        mt: 8,
-                    }}
-                >
-                    © Digital Dicebound — {new Date().getFullYear()}
-                </Box>
+                </PageTransition>
             </Box>
+            <Box
+                component="footer"
+                sx={{
+                    py: 2,
+                    opacity: 0.5,
+                    fontSize: 13,
+                    textAlign: "center",
+                    mt: 8,
+                }}
+            >
+                © Digital Dicebound — {new Date().getFullYear()}
+            </Box>
+        </Box>
+    );
+}
+
+export default function App() {
+    const [auth, setAuth] = useState(!!localStorage.getItem("basicAuth"));
+
+    const handleLogin = () => setAuth(true);
+    const handleLogout = () => setAuth(false);
+
+    return (
+        <BrowserRouter>
+            <AppRoutes auth={auth} handleLogin={handleLogin} handleLogout={handleLogout} />
         </BrowserRouter>
     );
 }

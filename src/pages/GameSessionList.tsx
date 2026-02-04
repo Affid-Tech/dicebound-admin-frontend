@@ -82,7 +82,7 @@ export default function GameSessionList({
                                 flexDirection: "column",
                                 cursor: "pointer",
                                 boxShadow: 1,
-                                "&:hover": { boxShadow: 4, background: "#F8F9FB" }
+                                "&:hover": { boxShadow: 4, bgcolor: "action.hover" }
                             }}
                             onClick={e => {
                                 // Prevent row click when clicking delete
@@ -175,7 +175,7 @@ export default function GameSessionList({
             <Box sx={{ overflowX: "auto", bgcolor: "background.paper", borderRadius: 1 }}>
                 <Table size="small" aria-label="Список сессий">
                     <TableHead>
-                        <TableRow sx={{ bgcolor: "grey.100" }}>
+                        <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? "rgba(183, 159, 255, 0.15)" : "grey.100" }}>
                             <TableCell sx={{ fontWeight: 700 }}>Дата и время</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Длительность (ч)</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Foundry</TableCell>

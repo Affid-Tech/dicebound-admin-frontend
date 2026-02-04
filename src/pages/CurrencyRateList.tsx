@@ -1,10 +1,26 @@
 import {useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {Alert, Box, Button, Card, CardContent, CircularProgress, Paper, Table, TableBody, TableCell, TableHead, TableRow, Tooltip, Typography, useMediaQuery,} from "@mui/material";
+import {
+    Alert,
+    Box,
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableRow,
+    Tooltip,
+    Typography,
+    useMediaQuery,
+} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
 import AddIcon from "@mui/icons-material/Add";
 import {CurrencyRateService} from "../api/CurrencyRateService";
 import type {CurrencyRateDto} from "../types/currencyRate";
+import GlassCard from "../components/GlassCard.tsx";
+import LoadingSpinner from "../components/LoadingSpinner.tsx";
+import AnimatedList from "../components/AnimatedList.tsx";
+import {brand} from "../theme/palette";
 
 export default function CurrencyRateList() {
     const [rates, setRates] = useState<CurrencyRateDto[]>([]);
@@ -14,6 +30,7 @@ export default function CurrencyRateList() {
 
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const isDark = theme.palette.mode === "dark";
 
     useEffect(() => {
         CurrencyRateService.list()
@@ -22,10 +39,9 @@ export default function CurrencyRateList() {
             .finally(() => setLoading(false));
     }, []);
 
-    // Shared header
     const headerBlock = (
         <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-            <Typography variant={isMobile ? "h6" : "h5"} component="h1" sx={{ fontWeight: 700 }}>
+            <Typography variant={isMobile ? "h6" : "h5"} component="h1" sx={{fontWeight: 700}}>
                 Курсы валют
             </Typography>
             <Tooltip title="Добавить курс">
@@ -34,32 +50,37 @@ export default function CurrencyRateList() {
                         color="primary"
                         variant="contained"
                         size="small"
-                        sx={{ minWidth: 0, px: 1.5, boxShadow: 1 }}
+                        sx={{minWidth: 0, px: 1.5, boxShadow: 1}}
                         onClick={() => navigate("/currency-rates/new")}
                     >
-                        <AddIcon />
+                        <AddIcon/>
                     </Button>
                 ) : (
                     <AddIcon
                         color="primary"
                         onClick={() => navigate("/currency-rates/new")}
-                        sx={{ cursor: "pointer", color: "primary.main", fontSize: 22, '&:hover': { color: "#000" } }}
+                        sx={{
+                            cursor: "pointer",
+                            color: "primary.main",
+                            fontSize: 22,
+                            '&:hover': {color: brand.teal},
+                            transition: "color 0.2s ease",
+                        }}
                     />
                 )}
             </Tooltip>
         </Box>
     );
 
-    // Feedback
     const feedbackBlock = (
         <>
             {loading && (
                 <Box display="flex" justifyContent="center" my={4}>
-                    <CircularProgress />
+                    <LoadingSpinner text="Загрузка курсов..."/>
                 </Box>
             )}
             {error && (
-                <Alert severity="error" sx={{ mb: 2 }}>
+                <Alert severity="error" sx={{mb: 2}}>
                     {error}
                 </Alert>
             )}
@@ -73,24 +94,23 @@ export default function CurrencyRateList() {
 
     if (isMobile) {
         return (
-            <Box sx={{ px: 2, pt: 4, pb: 2 }}>
+            <Box sx={{px: 2, pt: 4, pb: 2}}>
                 {headerBlock}
                 {feedbackBlock}
                 {!loading && !error && rates.length > 0 && (
-                    <Box>
+                    <AnimatedList>
                         {rates.map((r) => (
-                            <Paper
+                            <GlassCard
                                 key={r.currency}
+                                hoverable
+                                padding={2}
                                 sx={{
-                                    mb: 2, p: 2, borderRadius: 2,
+                                    mb: 2,
                                     cursor: "pointer",
-                                    boxShadow: 2,
-                                    '&:hover': { boxShadow: 6, background: "#F8F9FB" },
-                                    transition: "box-shadow 0.18s, background 0.18s"
                                 }}
                                 onClick={() => navigate(`/currency-rates/${r.currency}`)}
                             >
-                                <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 0.5 }}>
+                                <Typography variant="subtitle1" sx={{fontWeight: 700, mb: 0.5, color: isDark ? brand.teal : "text.primary"}}>
                                     {r.currency}
                                 </Typography>
                                 <Typography variant="body2" color="text.secondary">
@@ -99,9 +119,9 @@ export default function CurrencyRateList() {
                                 <Typography variant="body2" color="text.secondary">
                                     <b>Обновлён:</b> {new Date(r.updatedAt).toLocaleString()}
                                 </Typography>
-                            </Paper>
+                            </GlassCard>
                         ))}
-                    </Box>
+                    </AnimatedList>
                 )}
             </Box>
         );
@@ -109,36 +129,38 @@ export default function CurrencyRateList() {
 
     // Desktop/tablet
     return (
-        <Card sx={{ maxWidth: 600, margin: "24px auto", p: 2 }}>
-            <CardContent>
-                {headerBlock}
-                {feedbackBlock}
-                {!loading && !error && rates.length > 0 && (
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Валюта</TableCell>
-                                <TableCell>Курс</TableCell>
-                                <TableCell>Обновлён</TableCell>
+        <GlassCard
+            hoverable={false}
+            sx={{maxWidth: 600, margin: "24px auto"}}
+            padding={4}
+        >
+            {headerBlock}
+            {feedbackBlock}
+            {!loading && !error && rates.length > 0 && (
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Валюта</TableCell>
+                            <TableCell>Курс</TableCell>
+                            <TableCell>Обновлён</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {rates.map((r) => (
+                            <TableRow
+                                key={r.currency}
+                                hover
+                                sx={{cursor: "pointer"}}
+                                onClick={() => navigate(`/currency-rates/${r.currency}`)}
+                            >
+                                <TableCell sx={{color: isDark ? brand.teal : "inherit"}}>{r.currency}</TableCell>
+                                <TableCell>{r.ratio}</TableCell>
+                                <TableCell>{new Date(r.updatedAt).toLocaleString()}</TableCell>
                             </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {rates.map((r) => (
-                                <TableRow
-                                    key={r.currency}
-                                    hover
-                                    sx={{ cursor: "pointer" }}
-                                    onClick={() => navigate(`/currency-rates/${r.currency}`)}
-                                >
-                                    <TableCell>{r.currency}</TableCell>
-                                    <TableCell>{r.ratio}</TableCell>
-                                    <TableCell>{new Date(r.updatedAt).toLocaleString()}</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                )}
-            </CardContent>
-        </Card>
+                        ))}
+                    </TableBody>
+                </Table>
+            )}
+        </GlassCard>
     );
 }

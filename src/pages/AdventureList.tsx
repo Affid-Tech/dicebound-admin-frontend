@@ -1,7 +1,7 @@
 import {useCallback, useEffect, useState} from "react";
 import {useNavigate} from "react-router-dom";
 import type {UserDto} from "../types/user";
-import {UserService} from "../api/UserService"; // или как у тебя называется сервис пользователей
+import {UserService} from "../api/UserService";
 import Autocomplete from "@mui/material/Autocomplete";
 import {AdventureService} from "../api/AdventureService";
 import type {AdventureDto, AdventurePage, AdventureStatus, AdventureType} from "../types/adventure";
@@ -10,13 +10,11 @@ import {
     Box,
     Button,
     Chip,
-    CircularProgress,
     FormControl,
     InputLabel,
     MenuItem,
     OutlinedInput,
     Pagination,
-    Paper,
     Select,
     Table,
     TableBody,
@@ -30,13 +28,17 @@ import {
 import {useTheme} from "@mui/material/styles";
 import {adventureStatuses, adventureTypes} from "./AdventureLabels.ts";
 import {SortableHeader} from "../components/SortableHeader.tsx";
+import GlassCard from "../components/GlassCard.tsx";
+import LoadingSpinner from "../components/LoadingSpinner.tsx";
+import AnimatedList from "../components/AnimatedList.tsx";
+import {brand} from "../theme/palette";
 
 export default function AdventureList() {
     const [adventures, setAdventures] = useState<AdventureDto[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    const [page, setPage] = useState(0);        // 0-based для backend
+    const [page, setPage] = useState(0);
     const [size] = useState(10);
     const [totalPages, setTotalPages] = useState(0);
 
@@ -47,11 +49,12 @@ export default function AdventureList() {
     const [selectedDm, setSelectedDm] = useState<UserDto | null>(null);
     const [dmIdFilter, setDmIdFilter] = useState("");
 
-    const [sort, setSort] = useState<string | null>(null); // например "title,asc"
+    const [sort, setSort] = useState<string | null>(null);
 
     const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+    const isDark = theme.palette.mode === "dark";
 
     const loadAdventures = useCallback(() => {
         setLoading(true);
@@ -80,32 +83,16 @@ export default function AdventureList() {
     useEffect(() => {
         UserService.listDungeonMasters()
             .then((all) => setDungeonMasters(all.content))
-            .catch(err => {
-                console.error("Не удалось загрузить мастеров", err);
-            });
+            .catch(() => {});
     }, []);
 
     const handleSort = (field: string) => {
-        setPage(0); // при смене сортировки возвращаемся на первую страницу
+        setPage(0);
         setSort(prev => {
-            if (!prev) {
-                // раньше не сортировали вообще → включаем asc
-                return `${field},asc`;
-            }
-
+            if (!prev) return `${field},asc`;
             const [prevField, prevDir] = prev.split(",");
-
-            if (prevField !== field) {
-                // кликнули по другому столбцу → сортируем его asc
-                return `${field},asc`;
-            }
-
-            if (prevDir === "asc") {
-                // было asc → делаем desc
-                return `${field},desc`;
-            }
-
-            // было desc по этому же полю → снимаем сортировку полностью
+            if (prevField !== field) return `${field},asc`;
+            if (prevDir === "asc") return `${field},desc`;
             return null;
         });
     };
@@ -123,7 +110,6 @@ export default function AdventureList() {
         setSort(null);
     };
 
-    // Header + кнопка Создать
     const headerBlock = (
         <Box sx={{mb: 3, display: "flex", alignItems: "center", justifyContent: "space-between"}}>
             <Typography variant={isMobile ? "h5" : "h4"}>
@@ -141,7 +127,6 @@ export default function AdventureList() {
         </Box>
     );
 
-    // Блок фильтров
     const filtersBlock = (
         <Box
             sx={{
@@ -170,6 +155,10 @@ export default function AdventureList() {
                                     key={value}
                                     label={adventureStatuses.find(it => it.value === value)?.label ?? value}
                                     size="small"
+                                    sx={{
+                                        background: `${brand.teal}20`,
+                                        color: isDark ? brand.teal : "text.primary",
+                                    }}
                                 />
                             ))}
                         </Box>
@@ -201,6 +190,10 @@ export default function AdventureList() {
                                     key={value}
                                     label={adventureTypes.find(it => it.value === value)?.label ?? value}
                                     size="small"
+                                    sx={{
+                                        background: `${brand.lavender}20`,
+                                        color: isDark ? brand.lavender : "text.primary",
+                                    }}
                                 />
                             ))}
                         </Box>
@@ -225,10 +218,7 @@ export default function AdventureList() {
                         setPage(0);
                         setDmIdFilter(newValue?.id ?? "");
                     }}
-                    getOptionLabel={(option) =>
-                        option.name
-                        ?? ""
-                    }
+                    getOptionLabel={(option) => option.name ?? ""}
                     renderInput={(params) => (
                         <TextField
                             {...params}
@@ -251,12 +241,11 @@ export default function AdventureList() {
         </Box>
     );
 
-    // Loading/error/empty feedback
     const feedbackBlock = (
         <>
             {loading && (
                 <Box sx={{display: "flex", justifyContent: "center", my: 4}}>
-                    <CircularProgress/>
+                    <LoadingSpinner text="Загрузка приключений..." />
                 </Box>
             )}
             {error && (
@@ -296,19 +285,21 @@ export default function AdventureList() {
                 {feedbackBlock}
                 <Box>
                     {!loading && !error && adventures.length > 0 && (
-                        <>
+                        <AnimatedList>
                             {adventures.map(a => (
-                                <Paper
+                                <GlassCard
                                     key={a.id}
+                                    hoverable
+                                    padding={2}
                                     sx={{
-                                        mb: 2, p: 2, borderRadius: 2,
+                                        mb: 2,
                                         cursor: "pointer",
-                                        '&:hover': {boxShadow: 6, background: "#F8F9FB"},
                                     }}
                                     onClick={() => navigate(`/adventures/${a.id}`)}
-                                    elevation={2}
                                 >
-                                    <Typography variant="h6" sx={{mb: 1}}>{a.title}</Typography>
+                                    <Typography variant="h6" sx={{mb: 1, color: isDark ? brand.teal : "text.primary"}}>
+                                        {a.title}
+                                    </Typography>
                                     <Typography variant="body2" color="text.secondary">
                                         <b>Тип:</b> {adventureTypes.find(it => it.value == a.type)?.label}<br/>
                                         <b>Статус:</b> {adventureStatuses.find(it => it.value == a.status)?.label}<br/>
@@ -316,10 +307,9 @@ export default function AdventureList() {
                                         <b>Мастер:</b> {a.dungeonMaster?.name || "-"}<br/>
                                         <b>Игроки:</b> {a.minPlayers !== a.maxPlayers ? `${a.minPlayers}–${a.maxPlayers}` : a.minPlayers}
                                     </Typography>
-                                </Paper>
-                            ))
-                            }
-                        </>
+                                </GlassCard>
+                            ))}
+                        </AnimatedList>
                     )}
                     {paginationBlock}
                 </Box>
@@ -329,7 +319,11 @@ export default function AdventureList() {
 
     // Desktop
     return (
-        <Paper elevation={3} sx={{maxWidth: 900, mx: "auto", my: 4, p: 4, borderRadius: 3}}>
+        <GlassCard
+            hoverable={false}
+            sx={{maxWidth: 900, mx: "auto", my: 4}}
+            padding={4}
+        >
             {headerBlock}
             {filtersBlock}
             {feedbackBlock}
@@ -368,7 +362,7 @@ export default function AdventureList() {
                                     onClick={() => navigate(`/adventures/${a.id}`)}
                                     sx={{cursor: "pointer"}}
                                 >
-                                    <TableCell>{a.title}</TableCell>
+                                    <TableCell sx={{color: isDark ? brand.teal : "inherit"}}>{a.title}</TableCell>
                                     <TableCell>{adventureTypes.find(it => it.value == a.type)?.label}</TableCell>
                                     <TableCell>{adventureStatuses.find(it => it.value == a.status)?.label}</TableCell>
                                     <TableCell>{a.gameSystem}</TableCell>
@@ -381,6 +375,6 @@ export default function AdventureList() {
                 </Box>
             )}
             {paginationBlock}
-        </Paper>
+        </GlassCard>
     );
 }

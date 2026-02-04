@@ -145,7 +145,7 @@ export default function AdventureSignupList({
                                 flexDirection: "column",
                                 cursor: "pointer",
                                 boxShadow: 1,
-                                "&:hover": { boxShadow: 4, background: "#F8F9FB" }
+                                "&:hover": { boxShadow: 4, bgcolor: "action.hover" }
                             }}
                             onClick={e => {
                                 // Prevent row click when clicking delete
@@ -299,7 +299,7 @@ export default function AdventureSignupList({
             <Box sx={{ overflowX: "auto", bgcolor: "background.paper", borderRadius: 1 }}>
                 <Table size="small" aria-label="Список заявок">
                     <TableHead>
-                        <TableRow sx={{ bgcolor: "grey.100" }}>
+                        <TableRow sx={{ bgcolor: theme.palette.mode === 'dark' ? "rgba(183, 159, 255, 0.15)" : "grey.100" }}>
                             <TableCell sx={{ fontWeight: 700 }}>Игрок</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Email</TableCell>
                             <TableCell sx={{ fontWeight: 700 }}>Статус</TableCell>

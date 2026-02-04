@@ -1,17 +1,22 @@
 import React, {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import {setBasicAuth} from "../api/fetchWithAuth";
-import {Alert, Box, Button, Card, CardContent, Stack, TextField, Typography, useMediaQuery} from "@mui/material";
+import {Alert, Box, Button, CardContent, Stack, TextField, Typography, useMediaQuery} from "@mui/material";
 import {useTheme} from "@mui/material/styles";
+import GlassCard from "../components/GlassCard.tsx";
+import LoadingSpinner from "../components/LoadingSpinner.tsx";
+import {AnimatedListItem} from "../components/AnimatedList.tsx";
+import {gradients} from "../theme/palette";
 
 interface LoginPageProps {
     onLogin?: () => void;
 }
 
-export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
+export default function LoginPage({onLogin}: Readonly<LoginPageProps>) {
     const [login, setLogin] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
 
     const theme = useTheme();
@@ -20,6 +25,7 @@ export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
+        setLoading(true);
 
         setBasicAuth(login, password);
 
@@ -40,49 +46,106 @@ export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
             } else {
                 setError("Ошибка авторизации");
             }
+        } finally {
+            setLoading(false);
         }
     };
 
     const content = (
         <>
-            <Typography variant="h4" component="h2" align="center" gutterBottom mb={4}>
-                Вход администратора
-            </Typography>
+            <AnimatedListItem delay={0}>
+                <Typography
+                    variant="h4"
+                    component="h2"
+                    align="center"
+                    gutterBottom
+                    mb={4}
+                    sx={{
+                        background: gradients.iridescent,
+                        backgroundClip: "text",
+                        WebkitBackgroundClip: "text",
+                        WebkitTextFillColor: "transparent",
+                        fontWeight: 700,
+                    }}
+                >
+                    Вход администратора
+                </Typography>
+            </AnimatedListItem>
             <Box component="form" onSubmit={handleSubmit} noValidate>
                 <Stack>
-                    <Stack direction="column" spacing={2} mb={2}>
-                        <Typography variant="body1" align="left" gutterBottom>
-                            Логин
-                        </Typography>
-                        <TextField
-                            value={login}
-                            onChange={e => setLogin(e.target.value)}
-                            fullWidth
-                            required
-                            autoFocus
-                        />
-                    </Stack>
-                    <Stack direction="column" spacing={2} mb={4}>
-                        <Typography variant="body1" align="left" gutterBottom>
-                            Пароль
-                        </Typography>
-                        <TextField
-                            type="password"
-                            value={password}
-                            onChange={e => setPassword(e.target.value)}
-                            fullWidth
-                            required
-                        />
-                    </Stack>
+                    <AnimatedListItem delay={0.1}>
+                        <Stack direction="column" spacing={2} mb={2}>
+                            <Typography variant="body1" align="left" gutterBottom>
+                                Логин
+                            </Typography>
+                            <TextField
+                                value={login}
+                                onChange={e => setLogin(e.target.value)}
+                                fullWidth
+                                required
+                                autoFocus
+                                disabled={loading}
+                            />
+                        </Stack>
+                    </AnimatedListItem>
+                    <AnimatedListItem delay={0.2}>
+                        <Stack direction="column" spacing={2} mb={4}>
+                            <Typography variant="body1" align="left" gutterBottom>
+                                Пароль
+                            </Typography>
+                            <TextField
+                                type="password"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                fullWidth
+                                required
+                                disabled={loading}
+                            />
+                        </Stack>
+                    </AnimatedListItem>
 
-                    <Button type="submit" variant="contained" fullWidth disabled={!login || !password}>
-                        Войти
-                    </Button>
-                    {error && <Alert severity="error">{error}</Alert>}
+                    <AnimatedListItem delay={0.3}>
+                        <Button
+                            type="submit"
+                            variant="contained"
+                            fullWidth
+                            disabled={!login || !password || loading}
+                            sx={{
+                                py: 1.5,
+                                fontSize: "1rem",
+                            }}
+                        >
+                            {loading ? "Вход..." : "Войти"}
+                        </Button>
+                    </AnimatedListItem>
+
+                    {error && (
+                        <AnimatedListItem delay={0}>
+                            <Alert severity="error" sx={{mt: 2}}>
+                                {error}
+                            </Alert>
+                        </AnimatedListItem>
+                    )}
                 </Stack>
             </Box>
         </>
     );
+
+    if (loading) {
+        return (
+            <Box
+                sx={{
+                    minHeight: "100vh",
+                    width: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                }}
+            >
+                <LoadingSpinner text="Авторизация..." />
+            </Box>
+        );
+    }
 
     return (
         <Box
@@ -92,18 +155,23 @@ export default function LoginPage({ onLogin }: Readonly<LoginPageProps>) {
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
+                py: 4,
             }}
         >
             {isMobile ? (
-                <Box sx={{ width: "100%", maxWidth: 360, px: 2 }}>
+                <Box sx={{width: "100%", maxWidth: 360, px: 2}}>
                     {content}
                 </Box>
             ) : (
-                <Card sx={{ maxWidth: 360, width: "100%", p: 2 }}>
-                    <CardContent>
+                <GlassCard
+                    hoverable={false}
+                    sx={{maxWidth: 400, width: "100%"}}
+                    padding={4}
+                >
+                    <CardContent sx={{p: 0}}>
                         {content}
                     </CardContent>
-                </Card>
+                </GlassCard>
             )}
         </Box>
     );

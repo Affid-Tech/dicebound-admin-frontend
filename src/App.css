@@ -1,8 +1,50 @@
+/* CSS Custom Properties for theme */
+:root {
+  /* Light mode colors */
+  --color-background: #F5F3F0;
+  --color-surface: rgba(255, 255, 255, 0.65);
+  --color-text-primary: #1B1033;
+  --color-text-secondary: #5A5A72;
+  --color-accent-teal: #28D8C4;
+  --color-accent-lavender: #B79FFF;
+  --color-accent-purple: #7C6FFF;
+
+  /* Glass effect */
+  --glass-blur: blur(16px);
+  --glass-border: rgba(255, 255, 255, 0.4);
+
+  /* Scrollbar */
+  --scrollbar-track: rgba(27, 16, 51, 0.05);
+  --scrollbar-thumb: rgba(27, 16, 51, 0.2);
+  --scrollbar-thumb-hover: rgba(27, 16, 51, 0.35);
+}
+
+[data-theme="dark"] {
+  /* Dark mode colors */
+  --color-background: #0A0612;
+  --color-surface: rgba(27, 16, 51, 0.65);
+  --color-text-primary: #F5F3F0;
+  --color-text-secondary: #B8B5C4;
+
+  /* Glass effect */
+  --glass-border: rgba(183, 159, 255, 0.15);
+
+  /* Scrollbar */
+  --scrollbar-track: rgba(183, 159, 255, 0.05);
+  --scrollbar-thumb: rgba(183, 159, 255, 0.2);
+  --scrollbar-thumb-hover: rgba(183, 159, 255, 0.35);
+}
+
+/* Base styles */
 html, body, #root {
   height: 100%;
   min-height: 100%;
   margin: 0;
   padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 #root {
@@ -11,8 +53,75 @@ html, body, #root {
   min-height: 100vh;
 }
 
-.App{
-  background: linear-gradient(135deg, #F8F9FB 0%, #E8F3F7 100%);
+.App {
+  background: var(--color-background);
   height: 100%;
   overflow-y: auto;
+  transition: background-color 0.3s ease;
+}
+
+/* Light mode gradient background */
+[data-theme="light"] .App,
+:root:not([data-theme]) .App {
+  background: linear-gradient(135deg, #F5F3F0 0%, #E8F3F7 100%);
+}
+
+/* Dark mode gradient background */
+[data-theme="dark"] .App {
+  background: linear-gradient(135deg, #0A0612 0%, #150F1F 50%, #1B1033 100%);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
+  transition: background 0.2s ease;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* Focus visible styles for accessibility */
+:focus-visible {
+  outline: 2px solid var(--color-accent-teal);
+  outline-offset: 2px;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Selection color */
+::selection {
+  background: rgba(40, 216, 196, 0.3);
+  color: var(--color-text-primary);
+}
+
+[data-theme="dark"] ::selection {
+  background: rgba(183, 159, 255, 0.3);
 }

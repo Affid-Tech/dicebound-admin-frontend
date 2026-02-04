@@ -279,7 +279,7 @@ export default function AdventureDetails() {
             <Divider sx={{ my: 3 }} />
             <Box sx={{
                 display: "flex", alignItems: "center", mb: 2,
-                ...(!isMobile ? {background:  "rgba(245,248,255,0.7)"} : {}), px: 2, py: 1, borderRadius: 2
+                ...(!isMobile ? {background: theme.palette.mode === 'dark' ? "rgba(183, 159, 255, 0.1)" : "rgba(245,248,255,0.7)"} : {}), px: 2, py: 1, borderRadius: 2
             }}>
                 <Typography variant="h6" sx={{ flexGrow: 1, display: "flex", alignItems: "center", fontSize: "1.15rem" }}>
                     <SportsEsportsIcon sx={{ mr: 1, fontSize: 22 }} /> Сессии
@@ -353,7 +353,7 @@ export default function AdventureDetails() {
                 display: "flex",
                 alignItems: "center",
                 mb: 2,
-                ...(!isMobile ? {background:  "rgba(245,248,255,0.7)"} : {}),
+                ...(!isMobile ? {background: theme.palette.mode === 'dark' ? "rgba(183, 159, 255, 0.1)" : "rgba(245,248,255,0.7)"} : {}),
                 px: 2,
                 py: 1,
                 borderRadius: 2
